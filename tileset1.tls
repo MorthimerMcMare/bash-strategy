@@ -10,7 +10,7 @@ Hole	*	90
 Mountain	^	90	impassible
 HighMountain	^	37	impassible
 
-River	=	34	impassible:attr_amphybia
+River	=	34	impassible passible:attr_amphybia
 Bridge	=	90
 
 FreeBase	0	37	freebase

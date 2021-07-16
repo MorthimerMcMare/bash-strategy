@@ -35,7 +35,6 @@ if [[ "$1" == "updatecache" || ( -z ${CACHEFIELD[exists]+x} ) ]]; then
 fi
 
 
-clear # (Temporal).
 echo -ne "\e[?25l" # Hides cursor.
 
 if [[ -z "$2" ]]; then
@@ -55,7 +54,7 @@ if [[ -z "$2" ]]; then
 		for curObj in "${!OBJECTS[@]}"; do
 			CELLY=$(( $(echo "$curObj" | cut -d"," -f1) + $SCREENMINY ))
 			CELLX=$(( $(echo "$curObj" | cut -d"," -f2) + $SCREENMINX ))
-			echo -ne "\e[$(($CELLY + $SCREENMINY));$(($(echo "$2" | cut -d"," -f2) + $SCREENMINX))H"
+			echo -ne "\e[$CELLY;${CELLX}H"
 			echo -ne "\e[${OBJECTSCOLOR[$curObj]}m${OBJECTSHP[$curObj]}\e[0m"
 		done
 	elif [[ "$1" != "noobjects" ]]; then
@@ -72,16 +71,27 @@ else
 	CELLX=$(( $(echo "$2" | cut -d"," -f2) + $SCREENMINX ))
 	echo -ne "\e[$CELLY;${CELLX}H"
 
+	# This variant is slower than next one:
+	: 'if [ ! -z "${OBJECTS[$2]}" ]; then
+		if [ "$1" == "objectshp" ]; then
+			echo -ne "\e[${OBJECTSCOLOR[$2]}m${OBJECTSHP[$2]}\e[0m"
+		elif [ "$1" != "noobjects" ]; then
+			echo -ne "\e[${OBJECTSCOLOR[$2]}m$(. obj_getattr.sh $2 symbol)\e[0m"
+		fi
+	else
+		echo -n "${CACHEFIELD[$2]}"
+	fi'
+
 	if [[ "$1" == "objectshp" && ( ! -z ${OBJECTS[$2]} ) ]]; then
 		echo -ne "\e[${OBJECTSCOLOR[$2]}m${OBJECTSHP[$2]}\e[0m"
 	elif [[ "$1" != "noobjects" && ( ! -z ${OBJECTS[$2]} ) ]]; then
-		echo -ne "\e[${OBJECTSCOLOR[$2]}m$(. obj_getattr.sh $2 symbol)\e[0m"		
+		echo -ne "\e[${OBJECTSCOLOR[$2]}m$(. obj_getattr.sh $2 symbol)\e[0m"
 	else
 		echo -n "${CACHEFIELD[$2]}"
 	fi
 fi
 
 
-echo -ne "\e[?25h" # Shows cursor.
-
 echo -e "\n\n\n\n\n" # (Temporal).
+
+echo -ne "\e[?25h" # Shows cursor.

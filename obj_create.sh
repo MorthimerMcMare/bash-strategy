@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# "$2" is a name from objects data file, spaces are permitted.
-# "$3" is a belonging to a particular team (1..6).
-# "$4" must be a "$x,$y" pair.
+# "$1" is a name from objects data file, spaces are permitted.
+# "$2" is a belonging to a particular team (1..6).
+# "$3" must be a "$x,$y" pair.
 
 if [[ -z "$3" || ! -z "$4" ]]; then
 	echo "obj_create(): wrong number of arguments."
@@ -23,4 +23,7 @@ if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $X < $FIELDMAXX && $Y 
 	OBJECTSHP[$3]=$(. obj_getattr.sh "$3" "maxhp")
 	OBJECTSMOVE[$3]=$(. obj_getattr.sh "$3" "range")
 	OBJECTSCOLOR[$3]=$(( $2 + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
+
+	# There's cannot be reality where single object draws before field. Theoretically...
+	source drawfield.sh "default" "$3"
 fi

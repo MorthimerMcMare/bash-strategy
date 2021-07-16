@@ -13,7 +13,7 @@ setupTiles() {
 	fi
 
 	# Read tiles:
-	echo -n " \\_ Reading \"$TILESFILE\"... "
+	echo "setupTiles(): reading \"$TILESFILE\"..."
 
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
@@ -31,14 +31,14 @@ setupTiles() {
 	unset LINE
 
 	unset TILESFILE
-	echo Done.
+	echo "setupTiles(): done reading \"$TILESFILE\"."
 }
 
 setupObjectClasses() {
 	OBJFILE=$1
 
 	# Read objects data:
-	echo -n "Reading \"$OBJFILE\"... "
+	echo "setupObjectClasses(): reading \"$OBJFILE\"..."
 
 	LINE=""
 	CURNAME=""
@@ -77,13 +77,13 @@ $(echo "$LINE" | cut -d" " $CLASS_SYMBOL)\
 	unset LINE
 
 	unset OBJFILE
-	echo Done.
+	echo "setupObjectClasses(): done reading \"$OBJFILE\"."
 }
 
 setupField() {
 	MAPFILE="$1"
 
-	echo "Reading \"$MAPFILE\"... "
+	echo "setupField(): reading \"$MAPFILE\"..."
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
@@ -108,7 +108,7 @@ setupField() {
 				PLAYERS[$CURPLAYER]="$CURPLAYER"
 				PLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
-				echo " \\_ Player $CURPLAYER added."
+				echo "setupField(): player $CURPLAYER added."
 
 				TILES[BasePlayer$CURPLAYER]="\\e[${PLAYERCOLOR}m${SYMBOL}\\e[0m"
 				TILEATTRS[BasePlayer$CURPLAYER]=TILEATTRS[FreeBase]
@@ -133,7 +133,7 @@ setupField() {
 	unset LINE
 
 	unset MAPFILE
-	echo "Done."
+	echo "setupField(): done reading \"$MAPFILE\"."
 }
 
 
@@ -182,14 +182,27 @@ declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE &&
 declare -g -A PLAYERS && declare -g -A PLAYERSINFO
 
 
-setupField $1
-setupObjectClasses $2
+setupField "$1"
+setupObjectClasses "$2"
 
-#source obj_create.sh "Light tank" "1" "2,2"
-#source obj_create.sh "Heavy tank" "2" "6,3"
-#source obj_create.sh "BTR" "2" "3,7"
-#source obj_create.sh "Light tank" "2" "4,7"
-#source obj_create.sh "Trike" "1" "2,4"
+clear
+
+source obj_create.sh "Light tank" "1" "2,2"
+source obj_create.sh "Heavy tank" "2" "6,3"
+source obj_create.sh "BTR" "2" "3,7"
+source obj_create.sh "Light tank" "2" "4,7"
+source obj_create.sh "Trike" "1" "2,4"
 
 source drawfield.sh ""
+: 'sleep 0.7
 
+source obj_move.sh "4,7" "5,7" && sleep 0.4
+source obj_move.sh "2,2" "2,3" && sleep 0.4
+source obj_move.sh "5,7" "5,6" && sleep 0.4
+source obj_move.sh "2,3" "3,3" && sleep 0.4
+source obj_move.sh "6,3" "6,4" && sleep 0.4
+source obj_move.sh "2,4" "2,3" && sleep 0.4
+source obj_move.sh "5,6" "5,5"
+
+echo -ne "\e[?25h" # Shows cursor.
+'
