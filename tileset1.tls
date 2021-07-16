@@ -1,0 +1,16 @@
+// Definition ("\t" is a tab):
+//Name\t	Symbol\t	InternalTermColor\t	Attribute [Attribute [<...>]]
+
+Grass	.	32	explosion:30:Rough explosion:10:Ground explosion:5:DeadGround
+Rough	,	32	explosion:20:Ground explosion:7:DeadGround explosion:2:Hole
+Ground	.	33	explosion:15:DeadGround explosion:4:Hole
+DeadGround	.	90	explosion:5:Hole
+Hole	*	90
+
+Mountain	^	90	impassible
+HighMountain	^	37	impassible
+
+River	=	34	impassible:attr_amphybia
+Bridge	=	90
+
+FreeBase	0	37	freebase

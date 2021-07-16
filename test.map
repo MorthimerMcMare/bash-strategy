@@ -1,0 +1,26 @@
+// Definition:
+//tiles <filename>
+//set <string:alias> <char:symbol>
+//addPlayerBase <int_from1to6:playernum>
+//addLine <string:newmapline_builded_from_aliases>
+
+tiles tileset1.tls
+
+set Grass .
+set Mountain #
+set HighMountain @
+set River =
+set Bridge %
+set FreeBase 0
+
+addPlayerBase 1
+addPlayerBase 2
+
+addLine ##@@@@=@@
+addLine #.1#..=.#
+addLine #....0%.#
+addLine @.#.===.@
+addLine @.===.#.@
+addLine #.%0....#
+addLine @.=..#2.#
+addLine @@=##@@#@
