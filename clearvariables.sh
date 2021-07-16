@@ -1,0 +1,19 @@
+#!/bin/bash
+
+unset PLAYERS
+unset PLAYERSINFO
+
+unset FIELD
+unset FIELDALIASES
+unset CACHEFIELD
+
+unset TILES
+unset TILEATTRS
+
+unset CLASSATTRS
+unset CLASSTEAMS
+unset CLASSPROPS
+unset OBJECTSCOLOR
+unset OBJECTSMOVE
+unset OBJECTSHP
+unset OBJECTS

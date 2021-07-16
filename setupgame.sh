@@ -2,11 +2,11 @@
 
 setupTiles() {
 	# Tiles data variable:
-	[ -z ${TILENAMES+x} ] && declare -g -A TILES && declare -g -A TILEATTRS
+	declare -g -A TILES && declare -g -A TILEATTRS
 
 	if [[ ! -f $1 ]]; then
 		echo "Warning: cannot find tiles file \"$1\", using \"tileset1.tls\"."
-		[[ ! -f "tileset1.tls" ]] && echo "Error: cannot find default tileset file \"tileset1.tls\"." && kill $$
+		[[ ! -f "tileset1.tls" ]] && echo "Error: cannot find default tileset file \"tileset1.tls\"." && . shutdown.sh error
 		TILESFILE="tileset1.tls"
 	else
 		TILESFILE=$1
@@ -17,8 +17,9 @@ setupTiles() {
 
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
+		# Get rid of comments ("//") and empty lines:
 		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
-		[[ -z $LINE ]] && continue
+		[[ -z "$LINE" ]] && continue
 		
 		SYMBOL=$(printf "%s\n" "$LINE" | cut -f2)
 		COLOR=$(printf "%s\n" "$LINE" | cut -f3)
@@ -29,44 +30,23 @@ setupTiles() {
 	done < $TILESFILE
 	unset LINE
 	
+	unset TILESFILE
 	echo Done.
-}
-
-setupObjectClasses() {
-	[ -z ${CLASSES+x} ] && declare -g -A CLASSES && declare -g -A CLASSATTRS
-
-	
 }
 
 
 setupField() {
-	# Field variables ([x/y] map layer and quick aliases):
-	unset FIELD
-	unset FIELDALIASES
-	declare -g -A FIELD && declare -g -A FIELDALIASES
-	
-	# Object variables ([x/y] classes, [x/y] their HP and [x/y] their teams):
-	unset OBJECTS
-	unset OBJECTSHP
-	unset OBJECTTEAMS
-	declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTTEAMS
-	
-	# Players info (player color and a money value it has):
-	unset PLAYERS
-	unset PLAYERSINFO
-	declare -g -A PLAYERS && declare -g -A PLAYERSINFO
-	
-
-	[ ! -f "$1" ] && echo "Error: cannot find map file \"$1\"!" && kill $$
 	MAPFILE="$1"
 
 	FIELDMAXX=0
 	FIELDMAXY=0
 
-	echo Reading \"$MAPFILE\"...
+	echo "Reading \"$MAPFILE\"... "
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
+		# Get rid of comments ("//") and empty lines:
 		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
+		[[ -z "$LINE" ]] && continue
 		
 		case $(echo $LINE | cut -d" " -f1) in
 			"tiles")
@@ -104,15 +84,45 @@ setupField() {
 
 				FIELDMAXY=$(( $FIELDMAXY + 1 ))
 				;;
+			*)
+				;;
 		esac
 	done < $MAPFILE
 	unset LINE
 
-	echo -e "Done.\n"
-
-	source ./drawField.sh
+	unset MAPFILE
+	echo "Done."
 }
 
-setupField "test.map"
 
-source shutdown.sh
+if [[ -z "$2" || ! -z "$3" ]]; then
+	echo "setupField(): wrong number of arguments."
+	echo "Usage: <string:map_filename> <string:objdata_filename>."
+	source shutdown.sh error
+elif [[ ! -f "$1" ]]; then
+	echo "setupField(): cannot find map file \"$1\"." 
+	source shutdown.sh error
+elif [[ ! -f "$2" ]]; then
+	echo "setupField(): cannot find objects data file \"$2\"."
+	source shutdown.sh error
+fi
+
+
+# Clear all previous potencially set variables:
+source clearvariables.sh
+
+# Field variables ([x/y] map layer and quick aliases):
+declare -g -A FIELD && declare -g -A FIELDALIASES
+
+# Object variables ([x/y] classes, [x/y] their HP and [x/y] their colors):
+#"$OBJECTSMOVE" is a free turns left for the object.
+#"$OBJECTSCOLOR" is also the object team (as "($OBJECTCOLORS % 10)").
+declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE && declare -g -A OBJECTSCOLOR
+
+# Players info (player color and a money value it has):
+declare -g -A PLAYERS && declare -g -A PLAYERSINFO
+
+
+setupField $1
+
+source drawfield.sh

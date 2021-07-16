@@ -1,15 +1,7 @@
 #!/bin/bash
 
-unset PLAYERS
+source clearvariables.sh
 
-unset FIELD
-unset FIELDALIASES
-unset CACHEFIELD
+unset GAME_BASH_STRATEGY
 
-unset CLASSES
-unset CLASSATTRS
-unset OBJECTS
-unset OBJECTSHP
-
-unset TILES
-unset TILEATTRS
+[ "$1" == "error" ] && kill $$
