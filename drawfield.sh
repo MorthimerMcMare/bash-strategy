@@ -18,7 +18,7 @@ if [[ "$1" == "updatecache" || ( -z ${CACHEFIELD[exists]+x} ) ]]; then
 
 	# Force full update if there's no field cache:
 	[ -z ${CACHEFIELD+x} ] && declare -g -A CACHEFIELD=( [exists]="yes" ) && COORDS="" && CONTINUE=1
-	
+
 	# Full update if no coordinate presented:
 	if [[ -z "$COORDS" ]]; then
 		for (( y = 0; y < $FIELDMAXY; y++ )); do
@@ -36,11 +36,11 @@ fi
 
 
 clear # (Temporal).
-echo -ne "\e[?25l" # Hide cursor.
+echo -ne "\e[?25l" # Hides cursor.
 
 if [[ -z "$2" ]]; then
 	# Full map drawing.
-	
+
 	# Field layer:
 	for (( y = 0; y < $FIELDMAXY; y++ )); do
 		echo -ne "\e[$((y + $SCREENMINY));${SCREENMINX}H"
@@ -81,6 +81,7 @@ else
 	fi
 fi
 
-echo -ne "\e[?25h" # Show cursor.
+
+echo -ne "\e[?25h" # Shows cursor.
 
 echo -e "\n\n\n\n\n" # (Temporal).

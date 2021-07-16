@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# "$2" is a name from objects data file, spaces are permitted.
+# "$3" is a belonging to a particular team (1..6).
+# "$4" must be a "$x,$y" pair.
+
 if [[ -z "$3" || ! -z "$4" ]]; then
 	echo "obj_create(): wrong number of arguments."
 	echo "Usage: <string:obj_type> <int_from1to6:obj_team> <int:x>,<int:y>."
@@ -11,7 +15,7 @@ fi
 
 Y=$(echo "$2" | cut -d"," -f1)
 X=$(echo "$2" | cut -d"," -f2)
-# Is spawnee object belongs to the team pointed in the second argument:
+# Is spawnee object belongs to the team specified in the second argument:
 [[ $(echo "${CLASSTEAMS[$1]}" | grep -c "$2") == "1" ]] && TEAMSEXPRESSION=1 || TEAMSEXPRESSION=0
 
 if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $X < $FIELDMAXX && $Y < $FIELDMAXY ]]; then

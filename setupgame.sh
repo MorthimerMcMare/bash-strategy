@@ -20,7 +20,7 @@ setupTiles() {
 		# Get rid of comments ("//") and empty lines:
 		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
 		[[ -z "$LINE" ]] && continue
-		
+
 		SYMBOL=$(printf "%s\n" "$LINE" | cut -f2)
 		COLOR=$(printf "%s\n" "$LINE" | cut -f3)
 		ATTR=$(printf "%s\n" "$LINE" | cut -f4)
@@ -29,7 +29,7 @@ setupTiles() {
 		#printf "Tile: %s\n" "$LINE"
 	done < $TILESFILE
 	unset LINE
-	
+
 	unset TILESFILE
 	echo Done.
 }
@@ -46,7 +46,7 @@ setupObjectClasses() {
 		# Get rid of comments ("//") and empty lines:
 		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
 		[ -z "$LINE" ] && continue
-		
+
 		if [ -z "$CURCLASS" ]; then
 			CURCLASS=$(echo "$LINE" | cut -d":" -f1)
 			#"# For the MC colorer.
@@ -75,7 +75,7 @@ $(echo "$LINE" | cut -d" " $CLASS_SYMBOL)\
 		#printf "Line: %s\n" "$LINE"
 	done < $OBJFILE
 	unset LINE
-	
+
 	unset OBJFILE
 	echo Done.
 }
@@ -89,7 +89,7 @@ setupField() {
 		# Get rid of comments ("//") and empty lines:
 		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
 		[[ -z "$LINE" ]] && continue
-		
+
 		case $(echo $LINE | cut -d" " -f1) in
 			"tiles")
 				setupTiles $(echo $LINE | cut -d" " -f2)
@@ -109,7 +109,7 @@ setupField() {
 				PLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
 				echo " \\_ Player $CURPLAYER added."
-				
+
 				TILES[BasePlayer$CURPLAYER]="\\e[${PLAYERCOLOR}m${SYMBOL}\\e[0m"
 				TILEATTRS[BasePlayer$CURPLAYER]=TILEATTRS[FreeBase]
 
