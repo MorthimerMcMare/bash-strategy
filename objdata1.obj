@@ -1,22 +1,22 @@
 // Definition:
 //Name: Team [Team [<...>]]
-//Symb Cost Range HP ATK bATK [attr [attr [<...>]]]
+//Symb HP ATK bATK Cost Range [attr [attr [<...>]]]
 
 Trike: 1 2
-t 10 3 2 1 1
+t 2 1 1 10 3
 Light tank: 1 2
-T 40 2 5 3 1
+T 5 3 1 40 2
 
 Marauder: 1
-M 30 3 3 2 1
+M 3 2 1 30 3
 SAU: 1
-S 80 1 3 6 2 atkRange:2
+S 3 6 2 80 1 atkRange:2
 Amphybia: 1
-W 70 2 5 2 1 skills:attr_amphybia
+W 5 2 1 70 2 skills:attr_amphybia
 
 BTR: 2
-b 35 2 4 2 1
+b 4 2 1 35 2
 Heavy tank: 2
-H 70 2 8 4 2
+H 8 4 2 70 2
 Rocket launcher: 2
-X 85 1 4 6 2 atkRange:2
+X 4 6 2 85 1 atkRange:2

@@ -34,12 +34,54 @@ setupTiles() {
 	echo Done.
 }
 
+setupObjectClasses() {
+	OBJFILE=$1
+
+	# Read objects data:
+	echo -n "Reading \"$OBJFILE\"... "
+
+	LINE=""
+	CURNAME=""
+	while read -r LINE || [[ -n $LINE ]]; do
+		# Get rid of comments ("//") and empty lines:
+		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
+		[ -z "$LINE" ] && continue
+		
+		if [ -z "$CURCLASS" ]; then
+			CURCLASS=$(echo "$LINE" | cut -d":" -f1)
+			#"# For the MC colorer.
+
+			if [ ! -z "$CURCLASS" ]; then
+				# Write team info:
+				CLASSTEAMS[$CURCLASS]="$(echo "$LINE" | sed -e "s/.\+:\s\(.\+\)/\1/g" -e "s/\s/\t/g")"
+				#"# For the MC colorer...
+				#echo "${CLASSTEAMS[$CURCLASS]}"
+			fi
+		else
+			CLASSPROPS[$CURCLASS]="\
+$(echo "$LINE" | cut -d" " $CLASS_SYMBOL)\
+	$(echo "$LINE" | cut -d" " $CLASS_MAXHP)\
+	$(echo "$LINE" | cut -d" " $CLASS_ATK)\
+	$(echo "$LINE" | cut -d" " $CLASS_BATK)\
+	$(echo "$LINE" | cut -d" " $CLASS_COST)\
+	$(echo "$LINE" | cut -d" " $CLASS_RANGE)"
+
+			CLASSATTRS[$CURCLASS]="$(echo "$LINE" | cut $CLASS_ATTR)"
+
+			#echo "$CURCLASS: ${CLASSPROPS[$CURCLASS]}"
+			CURCLASS=""
+		fi
+
+		#printf "Line: %s\n" "$LINE"
+	done < $OBJFILE
+	unset LINE
+	
+	unset OBJFILE
+	echo Done.
+}
 
 setupField() {
 	MAPFILE="$1"
-
-	FIELDMAXX=0
-	FIELDMAXY=0
 
 	echo "Reading \"$MAPFILE\"... "
 	LINE=""
@@ -108,11 +150,28 @@ elif [[ ! -f "$2" ]]; then
 fi
 
 
+# "Utils" (for the "cut" command):
+CLASS_SYMBOL="-f1"
+CLASS_MAXHP="-f2"
+CLASS_ATK="-f3"
+CLASS_BATK="-f4"
+CLASS_COST="-f5"
+CLASS_RANGE="-f6"
+CLASS_ATTR="-f7"
+
+FIELDMAXX=0
+FIELDMAXY=0
+SCREENMINX=10
+SCREENMINY=5
+
 # Clear all previous potencially set variables:
 source clearvariables.sh
 
 # Field variables ([x/y] map layer and quick aliases):
 declare -g -A FIELD && declare -g -A FIELDALIASES
+
+# Class "static" variables:
+declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
 
 # Object variables ([x/y] classes, [x/y] their HP and [x/y] their colors):
 #"$OBJECTSMOVE" is a free turns left for the object.
@@ -124,5 +183,13 @@ declare -g -A PLAYERS && declare -g -A PLAYERSINFO
 
 
 setupField $1
+setupObjectClasses $2
 
-source drawfield.sh
+#source obj_create.sh "Light tank" "1" "2,2"
+#source obj_create.sh "Heavy tank" "2" "6,3"
+#source obj_create.sh "BTR" "2" "3,7"
+#source obj_create.sh "Light tank" "2" "4,7"
+#source obj_create.sh "Trike" "1" "2,4"
+
+source drawfield.sh ""
+
