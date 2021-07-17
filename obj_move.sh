@@ -17,7 +17,8 @@ fi
 DSTY=$(echo "$2" | cut -d"," -f1)
 DSTX=$(echo "$2" | cut -d"," -f2)
 
-if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY ]]; then
+
+if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY && (( ${OBJECTSMOVE[$1]} > 0 )) ]]; then
 	TILEATTR=${TILEATTRS[${FIELD[$2]}]}
 	OBJATTR="$(. obj_getattr.sh "$1" "attr")"
 	PASSIBILITY=1
@@ -27,7 +28,9 @@ if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY ]]; then
 		for i in $(echo "$TILEATTR"); do
 			[[ $i == "impassible" ]] && PASSIBILITY=0
 
-			if [[ $i == "impassible:"* && ( "$OBJATTR" == *"passattr:$(echo \"$i\" | cut -d":" -f2 )"* ) ]]; then
+			# Check for "[im]passible" attribute prefix isn't needed, because
+			#"$i" has no excess symbols at the beginnig of the string.
+			if [[ $i == "passible:"* && ( "$OBJATTR" == *"passattr:$(echo \"$i\" | cut -d":" -f2 )"* ) ]]; then
 				PASSIBILITY=1
 			fi
 		done
@@ -36,6 +39,7 @@ if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY ]]; then
 	if (( $PASSIBILITY == 1 )); then
 		OBJECTS[$2]=${OBJECTS[$1]}
 		OBJECTSHP[$2]=${OBJECTSHP[$1]}
+		#OBJECTSMOVE[$2]=$(( ${OBJECTSMOVE[$1]} - 1 ))
 		OBJECTSMOVE[$2]=${OBJECTSMOVE[$1]}
 		OBJECTSCOLOR[$2]=${OBJECTSCOLOR[$1]}
 

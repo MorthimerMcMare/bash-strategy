@@ -25,5 +25,5 @@ if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $X < $FIELDMAXX && $Y 
 	OBJECTSCOLOR[$3]=$(( $2 + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
 	# There's cannot be reality where single object draws before field. Theoretically...
-	source drawfield.sh "default" "$3"
+	#source drawfield.sh "default" "$3"
 fi

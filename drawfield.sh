@@ -17,7 +17,7 @@ if [[ "$1" == "updatecache" || ( -z ${CACHEFIELD[exists]+x} ) ]]; then
 	CONTINUE=0
 
 	# Force full update if there's no field cache:
-	[ -z ${CACHEFIELD+x} ] && declare -g -A CACHEFIELD=( [exists]="yes" ) && COORDS="" && CONTINUE=1
+	[ -z ${CACHEFIELD[exists]+x} ] && declare -g -A CACHEFIELD=( [exists]="yes" ) && COORDS="" && CONTINUE=1
 
 	# Full update if no coordinate presented:
 	if [[ -z "$COORDS" ]]; then
@@ -27,11 +27,16 @@ if [[ "$1" == "updatecache" || ( -z ${CACHEFIELD[exists]+x} ) ]]; then
 			done
 		done
 	else
-		CACHEFIELD[$y,$x]=$(echo -ne ${TILES[${FIELD[$y,$x]}]})
+		CACHEFIELD[$COORDS]=$(echo -ne ${TILES[${FIELD[$COORDS]}]})
+		#echo
+		#echo "\$COORDS: $COORDS"
+		#echo "\${FIELD[$COORDS]}: ${FIELD[$COORDS]}"
+		#echo "\${TILES[${FIELD[$COORDS]}]}): ${TILES[${FIELD[$COORDS]}]}"
+		#echo "\${CACHEFIELD[$COORDS]}: ${CACHEFIELD[$COORDS]}"
 	fi
 
 	# Return without drawing.
-	(( $CONTINUE == 0 )) && exit
+	(( $CONTINUE == 0 )) && return
 fi
 
 
@@ -67,11 +72,11 @@ if [[ -z "$2" ]]; then
 	fi
 else
 	# One cell drawing.
-	CELLY=$(( $(echo "$2j" | cut -d"," -f1) + $SCREENMINY ))
+	CELLY=$(( $(echo "$2" | cut -d"," -f1) + $SCREENMINY ))
 	CELLX=$(( $(echo "$2" | cut -d"," -f2) + $SCREENMINX ))
 	echo -ne "\e[$CELLY;${CELLX}H"
 
-	# This variant is slower than next one:
+	# This variant is slower than the next one:
 	: 'if [ ! -z "${OBJECTS[$2]}" ]; then
 		if [ "$1" == "objectshp" ]; then
 			echo -ne "\e[${OBJECTSCOLOR[$2]}m${OBJECTSHP[$2]}\e[0m"
@@ -87,11 +92,11 @@ else
 	elif [[ "$1" != "noobjects" && ( ! -z ${OBJECTS[$2]} ) ]]; then
 		echo -ne "\e[${OBJECTSCOLOR[$2]}m$(. obj_getattr.sh $2 symbol)\e[0m"
 	else
-		echo -n "${CACHEFIELD[$2]}"
+		echo -ne "${CACHEFIELD[$2]}"
 	fi
 fi
 
 
-echo -e "\n\n\n\n\n" # (Temporal).
+echo -e "\n\n\n\n\n\n\n\n" # (Temporal).
 
-echo -ne "\e[?25h" # Shows cursor.
+#echo -ne "\e[?25h" # Shows cursor.

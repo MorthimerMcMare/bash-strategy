@@ -110,10 +110,10 @@ setupField() {
 
 				echo "setupField(): player $CURPLAYER added."
 
-				TILES[BasePlayer$CURPLAYER]="\\e[${PLAYERCOLOR}m${SYMBOL}\\e[0m"
-				TILEATTRS[BasePlayer$CURPLAYER]=TILEATTRS[FreeBase]
+				TILES[PlayerBase$CURPLAYER]="\\e[${PLAYERCOLOR}m${SYMBOL}\\e[0m"
+				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[FreeBase]}"
 
-				FIELDALIASES[$CURPLAYER]=BasePlayer$CURPLAYER
+				FIELDALIASES[$CURPLAYER]="PlayerBase$CURPLAYER"
 				;;
 			"addLine")
 				CURMAPLINE=$(echo $LINE | cut -d" " -f2)
@@ -179,6 +179,7 @@ declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
 declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE && declare -g -A OBJECTSCOLOR
 
 # Players info (player color and a money value it has):
+# (It seems like this arrays mustn't be associative?)
 declare -g -A PLAYERS && declare -g -A PLAYERSINFO
 
 
@@ -188,21 +189,24 @@ setupObjectClasses "$2"
 clear
 
 source obj_create.sh "Light tank" "1" "2,2"
-source obj_create.sh "Heavy tank" "2" "6,3"
+source obj_create.sh "Heavy tank" "2" "3,3"
 source obj_create.sh "BTR" "2" "3,7"
 source obj_create.sh "Light tank" "2" "4,7"
 source obj_create.sh "Trike" "1" "2,4"
 
-source drawfield.sh ""
-: 'sleep 0.7
+source drawfield.sh "(from setupgame.sh)"
 
-source obj_move.sh "4,7" "5,7" && sleep 0.4
-source obj_move.sh "2,2" "2,3" && sleep 0.4
-source obj_move.sh "5,7" "5,6" && sleep 0.4
-source obj_move.sh "2,3" "3,3" && sleep 0.4
-source obj_move.sh "6,3" "6,4" && sleep 0.4
-source obj_move.sh "2,4" "2,3" && sleep 0.4
-source obj_move.sh "5,6" "5,5"
+source obj_move.sh "4,7" "5,7"
+source obj_move.sh "2,2" "2,3"
+source obj_attack.sh "2,3" "3,3"
+source obj_attack.sh "2,3" "3,3"
+source obj_attack.sh "2,3" "3,3"
+source obj_move.sh "2,4" "2,5"
+source obj_capturebase.sh "2,5"
+source obj_move.sh "3,7" "2,7"
+source obj_move.sh "2,7" "2,6"
+source obj_move.sh "2,6" "2,5"
+source obj_capturebase.sh "2,5"
 
 echo -ne "\e[?25h" # Shows cursor.
-'
+

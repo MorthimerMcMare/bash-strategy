@@ -42,8 +42,11 @@ case "$2" in
 	"color")
 		echo "${OBJECTSCOLOR[$1]}"
 		;;
-	"team"|"teams")
+	"team")
 		echo $(( "${OBJECTSCOLOR[$1]}" % 10 ))
+		;;
+	"possibleteams"|"teams")
+		echo "${CLASSTEAMS[${OBJECTS[$1]}]}"
 		;;
 	"attr*")
 		echo "${CLASSATTRS[${OBJECTS[$1]}]}"
