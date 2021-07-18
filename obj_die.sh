@@ -21,20 +21,25 @@ unset OBJECTSMOVE[$1]
 unset OBJECTSCOLOR[$1]
 
 # An explosion:
-EXPLCOLOR=31
-EXPLCOLORATTR=$(( 2 ** ( $RANDOM % 3 + 1 ) - 1 )) # Bold, italic or reversive...
-case $(( $RANDOM % 4 )) in
-	"0") EXPLCOLOR=91 ;;
-	"1") EXPLCOLOR=93 ;;
-	"2") EXPLCOLOR=97 ;;
-	*) ;;
-esac
-echo -ne "\e[$CELLY;${CELLX}H\e[${EXPLCOLORATTR};${EXPLCOLOR}m*\e[0m"
-sleep 0.15
-#read -s -n1
+explode() {
+	declare -a EXPLCOLOR=( 97 93 91 31 )
+	for (( explstate = 0; explstate < 4; explstate++ )); do
+		echo -ne "\e[$CELLY;${CELLX}H\e[${EXPLCOLOR[$explstate]}m*\e[0m"
+
+		SLEEPTIME=$((2 + $1))
+		(( $SLEEPTIME < 10 )) && SLEEPTIME="0$SLEEPTIME"
+		sleep "0.$SLEEPTIME"
+
+		SLEEPTIME=$((5 + $1))
+		(( $SLEEPTIME < 10 )) && SLEEPTIME="0$SLEEPTIME"
+		(( $explstate >= 2 )) && sleep "0.$SLEEPTIME"
+	done
+}
+
+explode $(( $RANDOM % 7 ))
 
 # Alas, here is a double call of the 'drawfield.sh "default"'.
-source tile_explode.sh "$1"
+source tile_explode.sh "$1" "do_not_drawfield"
 source drawfield.sh "default" "$1"
 
 

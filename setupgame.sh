@@ -258,7 +258,7 @@ source drawfield.sh "(from setupgame.sh)"
 # Ten times blows up the second (internally "1"st) column:
 #for (( ix = 0; ix < 10; ix++ )); do for (( jx = 0; jx < 8; jx++ )); do source tile_explode.sh "$jx,1"; done; done
 
-: '
+
 source obj_move.sh "4,7" "5,7" && sleep 0.4
 source obj_move.sh "2,2" "2,3" && sleep 0.4
 source obj_attack.sh "2,3" "3,3"  && sleep 0.4
@@ -266,7 +266,7 @@ source obj_move.sh "2,3" "2,2"  && sleep 0.4
 source obj_move.sh "3,3" "2,3"  && sleep 0.4
 source obj_attack.sh "2,2" "2,3"  && sleep 0.4
 source obj_attack.sh "2,2" "2,3"  && sleep 0.4
-
+: '
 source obj_move.sh "2,4" "2,5"  && sleep 0.4
 source obj_move.sh "2,5" "2,6"  && sleep 0.4
 source obj_move.sh "2,6" "2,5"  && sleep 0.4

@@ -45,12 +45,14 @@ if [[ ! ( -z ${OBJECTS[$1]} || -z ${OBJECTS[$2]} ) && (( ${OBJECTSMOVE[$1]} > 0 
 
 		#echo Attacker: ${OBJECTSHP[$1]} >> debug.log
 		# Attacker object dies:
-		(( ${OBJECTSHP[$1]} <= 0 )) && source obj_die.sh "$1"
+		(( ${OBJECTSHP[$1]} <= 0 )) && source obj_die.sh "$1" & ATTACKERDIEPID=$!
 	fi
 
 	#echo Target: ${OBJECTSHP[$2]} >> debug.log
 
 	# Target object dies:
-	(( ${OBJECTSHP[$2]} <= 0 )) && source obj_die.sh "$2"
+	(( ${OBJECTSHP[$2]} <= 0 )) && source obj_die.sh "$2" & TARGETDIEPID=$!
 
+	wait -f $ATTACKERDIEPID
+	wait -f $TARGETDIEPID
 fi
