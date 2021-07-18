@@ -21,11 +21,17 @@ setupTiles() {
 		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
 		[[ -z "$LINE" ]] && continue
 
+		NAME=$(printf "%s\n" "$LINE" | cut -f1)
 		SYMBOL=$(printf "%s\n" "$LINE" | cut -f2)
 		COLOR=$(printf "%s\n" "$LINE" | cut -f3)
-		ATTR=$(printf "%s\n" "$LINE" | cut -f4)
-		TILES[$(printf "%s\n" "$LINE" | cut -f1)]="\\e[${COLOR}m${SYMBOL}\\e[0m"
-		TILEATTRS[$(printf "%s\n" "$LINE" | cut -f1)]="$ATTR"
+
+		if [[ "$COLOR" == "nocolor" ]]; then
+			TILES[$NAME]="${SYMBOL}"
+		else
+			TILES[$NAME]="\\e[${COLOR}m${SYMBOL}\\e[0m"
+		fi
+
+		TILEATTRS[$NAME]="$(printf "%s\n" "$LINE" | cut -f4)"
 		#printf "Tile: %s\n" "$LINE"
 	done < $TILESFILE
 	unset LINE
@@ -109,9 +115,10 @@ setupField() {
 				PLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
 				echo "setupField(): player $CURPLAYER added."
+				echo ${TILES[PlayerBase]}
 
-				TILES[PlayerBase$CURPLAYER]="\\e[${PLAYERCOLOR}m${SYMBOL}\\e[0m"
-				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[FreeBase]}"
+				TILES[PlayerBase$CURPLAYER]="\\e[${PLAYERCOLOR}m${TILES[PlayerBase]}\\e[0m"
+				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
 
 				FIELDALIASES[$CURPLAYER]="PlayerBase$CURPLAYER"
 				;;
@@ -196,17 +203,27 @@ source obj_create.sh "Trike" "1" "2,4"
 
 source drawfield.sh "(from setupgame.sh)"
 
-source obj_move.sh "4,7" "5,7"
-source obj_move.sh "2,2" "2,3"
-source obj_attack.sh "2,3" "3,3"
-source obj_attack.sh "2,3" "3,3"
-source obj_attack.sh "2,3" "3,3"
-source obj_move.sh "2,4" "2,5"
-source obj_capturebase.sh "2,5"
-source obj_move.sh "3,7" "2,7"
-source obj_move.sh "2,7" "2,6"
-source obj_move.sh "2,6" "2,5"
-source obj_capturebase.sh "2,5"
+# Ten times blows up the second (internally "1"st) column:
+#for (( ix = 0; ix < 10; ix++ )); do for (( jx = 0; jx < 8; jx++ )); do source tile_explode.sh "$jx,1"; done; done
+
+: '
+source obj_move.sh "4,7" "5,7" && sleep 0.4
+source obj_move.sh "2,2" "2,3" && sleep 0.4
+source obj_attack.sh "2,3" "3,3"  && sleep 0.4
+source obj_move.sh "2,3" "2,2"  && sleep 0.4
+source obj_move.sh "3,3" "2,3"  && sleep 0.4
+source obj_attack.sh "2,2" "2,3"  && sleep 0.4
+source obj_attack.sh "2,2" "2,3"  && sleep 0.4
+
+source obj_move.sh "2,4" "2,5"  && sleep 0.4
+source obj_move.sh "2,5" "2,6"  && sleep 0.4
+source obj_move.sh "2,6" "2,5"  && sleep 0.4
+source obj_capturebase.sh "2,5"  && sleep 0.4
+source obj_move.sh "3,7" "2,7"  && sleep 0.4
+source obj_move.sh "2,7" "2,6"  && sleep 0.4
+source obj_move.sh "2,6" "2,5"  && sleep 0.4
+source obj_capturebase.sh "2,5"  && sleep 0.4
+: ' #'
 
 echo -ne "\e[?25h" # Shows cursor.
 

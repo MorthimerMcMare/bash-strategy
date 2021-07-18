@@ -25,6 +25,8 @@ if [[ ! ( -z ${OBJECTS[$1]} || -z ${OBJECTS[$2]} ) && (( ${OBJECTSMOVE[$1]} > 0 
 	ATTACKRANGE=1
 	BACKFIRERANGE=1
 
+	#OBJECTSMOVE[$1]=$(( ${OBJECTSMOVE[$1]} - 1 ))
+
 	# Check for attack range modifiers:
 	if [[ $OBJ1ATTR == *"atkRange:"* ]]; then
 		ATTACKRANGE=$(echo "$OBJ1ATTR" | sed "s/atkRange:\([[:digit:]]\)+/\1/1")  #"#
@@ -35,11 +37,11 @@ if [[ ! ( -z ${OBJECTS[$1]} || -z ${OBJECTS[$2]} ) && (( ${OBJECTSMOVE[$1]} > 0 
 	fi
 
 	OBJECTSHP[$2]=$(( ${OBJECTSHP[$2]} - $(. obj_getattr.sh "$1" "atk") ))
-	#source tile_explode.sh "$2"
+	source tile_explode.sh "$2"
 
 	if (( BACKFIRERANGE >= ATTACKRANGE )); then
 		OBJECTSHP[$1]=$(( ${OBJECTSHP[$1]} - $(. obj_getattr.sh "$2" "batk") ))
-		#source tile_explode.sh "$1"
+		source tile_explode.sh "$1"
 
 		#echo Attacker: ${OBJECTSHP[$1]} >> debug.log
 		# Attacker object dies:

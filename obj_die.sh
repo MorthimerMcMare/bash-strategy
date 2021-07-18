@@ -33,6 +33,8 @@ echo -ne "\e[$CELLY;${CELLX}H\e[${EXPLCOLORATTR};${EXPLCOLOR}m*\e[0m"
 sleep 0.15
 #read -s -n1
 
+# Alas, here is a double call of the 'drawfield.sh "default"'.
+source tile_explode.sh "$1"
 source drawfield.sh "default" "$1"
 
 

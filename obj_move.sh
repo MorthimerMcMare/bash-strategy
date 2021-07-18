@@ -48,7 +48,7 @@ if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY && (( ${OBJE
 		unset OBJECTSMOVE[$1]
 		unset OBJECTSCOLOR[$1]
 
-		source drawfield.sh "default" "$1"
 		source drawfield.sh "default" "$2"
+		source drawfield.sh "default" "$1"
 	fi
 fi
