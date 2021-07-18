@@ -18,7 +18,7 @@ setupTiles() {
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
+		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.*==g")
 		[[ -z "$LINE" ]] && continue
 
 		NAME=$(printf "%s\n" "$LINE" | cut -f1)
@@ -36,8 +36,8 @@ setupTiles() {
 	done < $TILESFILE
 	unset LINE
 
-	unset TILESFILE
 	echo "setupTiles(): done reading \"$TILESFILE\"."
+	unset TILESFILE
 }
 
 setupObjectClasses() {
@@ -50,7 +50,7 @@ setupObjectClasses() {
 	CURNAME=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
+		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.*==g")
 		[ -z "$LINE" ] && continue
 
 		if [ -z "$CURCLASS" ]; then
@@ -82,21 +82,73 @@ $(echo "$LINE" | cut -d" " $CLASS_SYMBOL)\
 	done < $OBJFILE
 	unset LINE
 
-	unset OBJFILE
 	echo "setupObjectClasses(): done reading \"$OBJFILE\"."
+	unset OBJFILE
 }
 
 setupField() {
 	MAPFILE="$1"
 
 	echo "setupField(): reading \"$MAPFILE\"..."
+	CURMAPSECTION=""
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.\+==g")
+		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.*==g")
 		[[ -z "$LINE" ]] && continue
 
-		case $(echo $LINE | cut -d" " -f1) in
+		# Get the current map section and cnvert it to the lowercase:
+		[[ "${LINE:0:1}" == '[' ]] && CURMAPSECTION=$(echo $LINE | sed "s/\[\(.\{2,20\}\)\]/\L\1/1") && continue
+		#"# Required by the MC colorer.
+		#echo \"$LINE\" / \"$CURMAPSECTION\"
+
+		case $CURMAPSECTION in
+			"tiles")
+				setupTiles $LINE
+				;;
+			"aliases")
+				FIELDALIASES["$(echo $LINE | cut -d" " -f2)"]="$(echo $LINE | cut -d" " -f1)"
+				;;
+			"players")
+				CURPLAYER=$(echo $LINE | cut -d" " -f1)
+				# Black and white aren't presented here.
+				if [[ "$CURPLAYER" < "1" || "$CURPLAYER" > "6" ]]; then
+					CURPLAYER=$(( $(echo $RANDOM) % 7 + 1 ))
+				fi
+				# Randomly changes the player color intensity:
+				#CURPLAYER=$(( $CURPLAYER + $(echo $RANDOM) % 2 * 60 ))
+				PLAYERS[$CURPLAYER]="$CURPLAYER"
+				PLAYERSINFO[$CURPLAYER]=$(echo $LINE | cut -d" " -f2)
+
+				CURPLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
+
+				TILES[PlayerBase$CURPLAYER]="\\e[${CURPLAYERCOLOR}m${TILES[PlayerBase]}\\e[0m"
+				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
+				FIELDALIASES[$CURPLAYER]="PlayerBase$CURPLAYER"
+
+				echo "setupField(): player $CURPLAYER added."
+				;;
+			"map")
+				(( $FIELDMAXX == 0 )) && FIELDMAXX=${#LINE}
+				if (( $FIELDMAXX != ${#LINE} )); then
+					echo "setupField(): warning: different field X ($FIELDMAXX known, ${#LINE} get)."
+					sleep 0.5
+				fi
+
+				for (( x = 0; x < FIELDMAXX; x++ )); do
+					CURCELL=${LINE:$x:1}
+					FIELD[$FIELDMAXY,$x]=${FIELDALIASES[$CURCELL]}
+				done
+
+				FIELDMAXY=$(( $FIELDMAXY + 1 ))
+				;;
+			*)
+				echo "setupField(): warinig: unknown section name \"$CURMAPSECTION\"."
+				sleep 0.5
+				;;
+		esac
+
+		: 'case $(echo $LINE | cut -d" " -f1) in
 			"tiles")
 				setupTiles $(echo $LINE | cut -d" " -f2)
 				;;
@@ -105,7 +157,7 @@ setupField() {
 				;;
 			"addPlayerBase")
 				CURPLAYER=$(echo $LINE | cut -d" " -f2)
-				# Black and white aren't presented here.
+				# Black and white aren`t presented here.
 				if [[ "$CURPLAYER" < "1" || "$CURPLAYER" > "6" ]]; then
 					CURPLAYER=$(( $(echo $RANDOM) % 7 + 1 ))
 				fi
@@ -115,7 +167,6 @@ setupField() {
 				PLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
 				echo "setupField(): player $CURPLAYER added."
-				echo ${TILES[PlayerBase]}
 
 				TILES[PlayerBase$CURPLAYER]="\\e[${PLAYERCOLOR}m${TILES[PlayerBase]}\\e[0m"
 				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
@@ -136,11 +187,12 @@ setupField() {
 			*)
 				;;
 		esac
+		'
 	done < $MAPFILE
 	unset LINE
 
-	unset MAPFILE
 	echo "setupField(): done reading \"$MAPFILE\"."
+	unset MAPFILE
 }
 
 
