@@ -48,7 +48,7 @@ case "$2" in
 	"possibleteams"|"teams")
 		echo "${CLASSTEAMS[${OBJECTS[$1]}]}"
 		;;
-	"attr*")
+	"attr"*)
 		echo "${CLASSATTRS[${OBJECTS[$1]}]}"
 		;;
 	*)

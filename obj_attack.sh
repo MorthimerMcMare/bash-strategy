@@ -13,15 +13,9 @@ elif [[ -z ${GAME_BASH_STRATEGY+x} ]]; then
 fi
 
 
-# It shall be in some other file.
-abs() {
-	(( $1 < 0 )) && echo $(( -1 * $1 )) || echo $1
-}
-
-
 if [[ ! ( -z ${OBJECTS[$1]} || -z ${OBJECTS[$2]} ) && (( ${OBJECTSMOVE[$1]} > 0 )) ]]; then
 	OBJ1ATTR="$(. obj_getattr.sh "$1" "attr")"
-	OBJ2ATTR="$(. obj_getattr.sh "$1" "attr")"
+	OBJ2ATTR="$(. obj_getattr.sh "$2" "attr")"
 	ATTACKRANGE=1
 	BACKFIRERANGE=1
 
@@ -45,14 +39,14 @@ if [[ ! ( -z ${OBJECTS[$1]} || -z ${OBJECTS[$2]} ) && (( ${OBJECTSMOVE[$1]} > 0 
 
 		#echo Attacker: ${OBJECTSHP[$1]} >> debug.log
 		# Attacker object dies:
-		(( ${OBJECTSHP[$1]} <= 0 )) && source obj_die.sh "$1" & ATTACKERDIEPID=$!
+		(( ${OBJECTSHP[$1]} <= 0 )) && source obj_die.sh "$1" #&& ATTACKERDIEPID=$?
 	fi
 
 	#echo Target: ${OBJECTSHP[$2]} >> debug.log
 
 	# Target object dies:
-	(( ${OBJECTSHP[$2]} <= 0 )) && source obj_die.sh "$2" & TARGETDIEPID=$!
+	(( ${OBJECTSHP[$2]} <= 0 )) && source obj_die.sh "$2" #&& TARGETDIEPID=$?
 
-	wait -f $ATTACKERDIEPID
-	wait -f $TARGETDIEPID
+	#wait -f $ATTACKERDIEPID
+	#wait -f $TARGETDIEPID
 fi

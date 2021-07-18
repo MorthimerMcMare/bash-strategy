@@ -50,5 +50,11 @@ if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY && (( ${OBJE
 
 		source drawfield.sh "default" "$2"
 		source drawfield.sh "default" "$1"
+
+		return 0
 	fi
+#else
+#	echo -e "NOT MOVED (src:$1; dst:$2)"
 fi
+
+return 1

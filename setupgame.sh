@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# "$1" is a map file to load.
+# "$2" is a objects file to load.
+
+if [[ -z "$2" || ! -z "$3" ]]; then
+	echo "setupField(): wrong number of arguments."
+	echo "Usage: <string:map_filename> <string:objdata_filename>."
+	source shutdown.sh error
+elif [[ ! -f "$1" ]]; then
+	echo "setupField(): cannot find map file \"$1\"." 
+	source shutdown.sh error
+elif [[ ! -f "$2" ]]; then
+	echo "setupField(): cannot find objects data file \"$2\"."
+	source shutdown.sh error
+fi
+
+
 setupTiles() {
 	# Tiles data variable:
 	declare -g -A TILES && declare -g -A TILEATTRS
@@ -147,66 +163,15 @@ setupField() {
 				sleep 0.5
 				;;
 		esac
-
-		: 'case $(echo $LINE | cut -d" " -f1) in
-			"tiles")
-				setupTiles $(echo $LINE | cut -d" " -f2)
-				;;
-			"set")
-				FIELDALIASES["$(echo $LINE | cut -d" " -f3)"]="$(echo $LINE | cut -d" " -f2)"
-				;;
-			"addPlayerBase")
-				CURPLAYER=$(echo $LINE | cut -d" " -f2)
-				# Black and white aren`t presented here.
-				if [[ "$CURPLAYER" < "1" || "$CURPLAYER" > "6" ]]; then
-					CURPLAYER=$(( $(echo $RANDOM) % 7 + 1 ))
-				fi
-				# Randomly changes the player color intensity:
-				#CURPLAYER=$(( $CURPLAYER + $(echo $RANDOM) % 2 * 60 ))
-				PLAYERS[$CURPLAYER]="$CURPLAYER"
-				PLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
-
-				echo "setupField(): player $CURPLAYER added."
-
-				TILES[PlayerBase$CURPLAYER]="\\e[${PLAYERCOLOR}m${TILES[PlayerBase]}\\e[0m"
-				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
-
-				FIELDALIASES[$CURPLAYER]="PlayerBase$CURPLAYER"
-				;;
-			"addLine")
-				CURMAPLINE=$(echo $LINE | cut -d" " -f2)
-				(( FIELDMAXX == 0 )) && FIELDMAXX=${#CURMAPLINE}
-
-				for (( x = 0; x < FIELDMAXX; x++ )); do
-					CURCELL=${CURMAPLINE:$x:1}
-					FIELD[$FIELDMAXY,$x]=${FIELDALIASES[$CURCELL]}
-				done
-
-				FIELDMAXY=$(( $FIELDMAXY + 1 ))
-				;;
-			*)
-				;;
-		esac
-		'
 	done < $MAPFILE
 	unset LINE
+
+	CURX=$(( $FIELDMAXX / 2 ))
+	CURY=$(( $FIELDMAXY / 2 ))
 
 	echo "setupField(): done reading \"$MAPFILE\"."
 	unset MAPFILE
 }
-
-
-if [[ -z "$2" || ! -z "$3" ]]; then
-	echo "setupField(): wrong number of arguments."
-	echo "Usage: <string:map_filename> <string:objdata_filename>."
-	source shutdown.sh error
-elif [[ ! -f "$1" ]]; then
-	echo "setupField(): cannot find map file \"$1\"." 
-	source shutdown.sh error
-elif [[ ! -f "$2" ]]; then
-	echo "setupField(): cannot find objects data file \"$2\"."
-	source shutdown.sh error
-fi
 
 
 # "Utils" (for the "cut" command):
@@ -223,13 +188,19 @@ FIELDMAXY=0
 SCREENMINX=10
 SCREENMINY=5
 
+# Current cursor x and y:
+CURX=0
+CURY=0
+
+CURMODE="cursor" # "cursor", "move", "target", "inbase".
+
 # Clear all previous potencially set variables:
 source clearvariables.sh
 
 # Field variables ([x/y] map layer and quick aliases):
 declare -g -A FIELD && declare -g -A FIELDALIASES
 
-# Class "static" variables:
+# Class "static constants":
 declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
 
 # Object variables ([x/y] classes, [x/y] their HP and [x/y] their colors):
@@ -258,7 +229,7 @@ source drawfield.sh "(from setupgame.sh)"
 # Ten times blows up the second (internally "1"st) column:
 #for (( ix = 0; ix < 10; ix++ )); do for (( jx = 0; jx < 8; jx++ )); do source tile_explode.sh "$jx,1"; done; done
 
-
+: '
 source obj_move.sh "4,7" "5,7" && sleep 0.4
 source obj_move.sh "2,2" "2,3" && sleep 0.4
 source obj_attack.sh "2,3" "3,3"  && sleep 0.4
@@ -266,7 +237,7 @@ source obj_move.sh "2,3" "2,2"  && sleep 0.4
 source obj_move.sh "3,3" "2,3"  && sleep 0.4
 source obj_attack.sh "2,2" "2,3"  && sleep 0.4
 source obj_attack.sh "2,2" "2,3"  && sleep 0.4
-: '
+
 source obj_move.sh "2,4" "2,5"  && sleep 0.4
 source obj_move.sh "2,5" "2,6"  && sleep 0.4
 source obj_move.sh "2,6" "2,5"  && sleep 0.4

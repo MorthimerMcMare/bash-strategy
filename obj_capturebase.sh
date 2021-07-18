@@ -13,18 +13,24 @@ fi
 
 
 # Captures base only if object exists, can move and a tile has a "freebase" attribute:
+#(I forgot about "do-not-capture-you-own-base" rule, yeah).
 if [[ ! -z ${OBJECTS[$1]} && (( ${OBJECTSMOVE[$1]} > 0 )) && ( ${TILEATTRS[${FIELD[$1]}]} == *"occupablebase"* ) ]]; then
 	CELLY=$(( $(echo "$1" | cut -d"," -f1) + $SCREENMINY ))
 	CELLX=$(( $(echo "$1" | cut -d"," -f2) + $SCREENMINX ))
 	CUROBJECTTEAM=$(. obj_getattr.sh "$1" "team")
 
-	#FIELD[$1]="PlayerBase$CUROBJECTTEAM"
+	echo -ne "\e[?25l" # Hides cursor.
+
 	FIELD[$1]="PlayerBase$CUROBJECTTEAM"
 	source drawfield.sh "updatecache" "$1"
 
-	echo -ne "\e[$CELLY;${CELLX}H"
-	echo -ne "\e[7;${OBJECTSCOLOR[$1]}m$(. obj_getattr.sh "$1" "symb")\e[0m"
-	sleep 0.1
+	CAPSYMBOL="$(. obj_getattr.sh "$1" "symb")"
+	#echo -ne "\e[7;${OBJECTSCOLOR[$1]}m$(. obj_getattr.sh "$1" "symb")\e[0m"
+	for (( i_capb = 0; i_capb < 10; i_capb++ )); do
+		echo -ne "\e[$CELLY;${CELLX}H"
+		echo -ne "\e[$(( $i_capb % 2 * 7 ));97m$CAPSYMBOL\e[0m"
+		sleep 0.02
+	done
 
 	unset OBJECTS[$1]
 	unset OBJECTSHP[$1]
@@ -35,4 +41,10 @@ if [[ ! -z ${OBJECTS[$1]} && (( ${OBJECTSMOVE[$1]} > 0 )) && ( ${TILEATTRS[${FIE
 
 	unset CELLX
 	unset CELLY
+
+	echo -ne "\e[?25h" # Shows cursor.
+	
+	return 0
 fi
+
+return 1
