@@ -4,6 +4,6 @@ source clearvariables.sh
 
 unset GAME_BASH_STRATEGY
 
-echo -ne "\e[?25h"
+source input_util.sh "restoreterminal"
 
 [ "$1" == "error" ] && kill $$

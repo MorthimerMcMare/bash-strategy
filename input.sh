@@ -24,8 +24,6 @@
 #//1..9 kp1..kp9: Select object // Looks hard to realisation.
 #
 
-echo -ne "\e[?25h" # Shows cursor.
-
 moveobjkey() {
 	# "$1" == "x" or "y";
 	# "$2" == "+" or "-".
@@ -108,8 +106,15 @@ capturebasekey() {
 }
 
 
+echo -ne "\e[?25h"
+
 read -n1 -s KEYPR
 KEYPR=$(echo "$KEYPR" | cat -vT)
+
+echo -ne "\e[?25l"
+
+# It more or less helps with the repeatable keypress echo:
+source input_util.sh "stopecho"
 
 case $KEYPR in
 # Not extended keys:
@@ -155,9 +160,5 @@ case $KEYPR in
 ;; # of *)
 esac
 
-
-# Attempt to flush stdin:
-#if [ -t 0 ]; then
-#	while read -t0 UNUSED; do read -t0.001 UNUSED; done
-#	[ ! -z "$UNUSED" ] && echo "input(): ignored sequence postfix: $UNUSED" | cat -v && unset UNUSED
-#fi
+source input_util.sh "flush"
+source input_util.sh "echo on"
