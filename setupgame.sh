@@ -188,6 +188,8 @@ FIELDMAXY=0
 SCREENMINX=10
 SCREENMINY=5
 
+ROWS=$(stty size | cut -d" " -f1)
+
 # Current cursor x and y:
 CURX=0
 CURY=0
@@ -219,12 +221,15 @@ setupObjectClasses "$2"
 clear
 
 source obj_create.sh "Light tank" "1" "2,2"
-source obj_create.sh "Heavy tank" "2" "3,3"
-source obj_create.sh "BTR" "2" "3,7"
-source obj_create.sh "Light tank" "2" "4,7"
 source obj_create.sh "Trike" "1" "2,4"
+source obj_create.sh "Amphybia" "1" "3,3"
 
-source drawfield.sh "(from setupgame.sh)"
+source obj_create.sh "Rocket launcher" "2" "5,4"
+source obj_create.sh "Heavy tank" "2" "3,7"
+source obj_create.sh "BTR" "2" "4,1"
+source obj_create.sh "Light tank" "2" "4,7"
+
+#source drawfield.sh "(from setupgame.sh)"
 
 # Ten times blows up the second (internally "1"st) column:
 #for (( ix = 0; ix < 10; ix++ )); do for (( jx = 0; jx < 8; jx++ )); do source tile_explode.sh "$jx,1"; done; done
@@ -246,7 +251,7 @@ source obj_move.sh "3,7" "2,7"  && sleep 0.4
 source obj_move.sh "2,7" "2,6"  && sleep 0.4
 source obj_move.sh "2,6" "2,5"  && sleep 0.4
 source obj_capturebase.sh "2,5"  && sleep 0.4
-: ' #'
 
 echo -ne "\e[?25h" # Shows cursor.
+: ' #'
 

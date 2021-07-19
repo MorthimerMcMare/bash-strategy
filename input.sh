@@ -1,6 +1,6 @@
 #!/bin/bash
 
-########### (Now there's no real keys because of WIP):
+########### (Not all keys from here are real because of WIP):
 #
 # w up			: Move cursor/object up (in base: select prev unit)
 # a left		: Move cursor/object left (in base: select prev unit)
@@ -9,10 +9,10 @@
 # space enter kp5 : Action key: toggle cursor/object (in base: select unit to produce)
 # f 1 kp1		: Attack/fire key
 #
-# e tab dot		: Next object
-# q shift-tab comma : Prev object
-# E	greater		: Next base
-# Q	less		: Prev base
+# e tab dot	kp9	: Next object
+# q shift-tab comma kp7 : Prev object
+# E	greater kp+	: Next base
+# Q	less kp-	: Prev base
 # c	slash bslash: Capture base
 # X doublequotes: End turn
 #
@@ -20,8 +20,7 @@
 # F10 M-x ^F4	: Exit
 # h F5			: Show all objects health
 # m shift-F5	: Show map layer only (without objects)
-# L ^L ^R		: Redraw screen
-#//1..9 kp1..kp9: Select object // Looks hard to realisation.
+# ^L ^R			: Redraw screen
 #
 
 moveobjkey() {
@@ -105,6 +104,16 @@ capturebasekey() {
 	fi
 }
 
+showaltfield() {
+	source drawfield.sh "$1"
+
+	echo -ne "\e[?25h\e[$(($ROWS - 3));1HPress any key to continue... "
+	read -n1 -s
+
+	echo -ne "\e[$(($ROWS - 3));1H                             \e[?25l"
+	source drawfield.sh "default"
+}
+
 
 echo -ne "\e[?25h"
 
@@ -127,8 +136,13 @@ case $KEYPR in
 "c"|"/"|"\\") capturebasekey ;;
 
 "^L"|"^R")
-	clear
-	source drawfield.sh "default"
+	source drawui.sh "updatepositions" "field" "unitspanel"
+;;
+"h")
+	showaltfield "objectshp"
+;;
+"m")
+	showaltfield "noobjects"
 ;;
 
 
@@ -147,8 +161,13 @@ case $KEYPR in
 		"[C") moveobjkey "x" "+" ;; # /
 		"[E") actionkey ;; # Keypad "5" (when not numlock).
 		"[F") attackkey ;; # Keypad "1"/"End" (when not numlock).
+		
+		"[15~") # F5 (show health)
+			showaltfield "objectshp" ;;
+		"[15;2~") # Shift-F5 (show map layer)
+			showaltfield "noobjects" ;;
 		*)
-			#echo "Escape sequence postfix: \"$ESCSEQ\"."
+			echo "Escape sequence postfix: \"$ESCSEQ\"."
 		;; # of *)
 	esac
 ;; # of "^[")
@@ -159,6 +178,3 @@ case $KEYPR in
 	#echo "Other ($KEYPR)"
 ;; # of *)
 esac
-
-source input_util.sh "flush"
-source input_util.sh "echo on"

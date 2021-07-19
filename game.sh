@@ -6,14 +6,18 @@ GAME_BASH_STRATEGY="$date"
 # Level, tileset (as a part of the map file) and objects loading:
 source setupgame.sh "test.map" "objdata1.obj"
 
-source drawui.sh
+source drawui.sh "updatepositions" "field" "unitspanel"
 
 while [[ $GAME_BASH_STRATEGY != "exit" ]]; do
 	source input.sh
 	source drawui.sh
+
+	source input_util.sh "flush"
+	source input_util.sh "echo on"
 done
 
-echo -e "\n\n\n\n\n\n\n\n"
+# Nice exit position:
+echo -e "\e[$(($ROWS - 2));1H"
 
 # Clearing all in-game variables:
 source shutdown.sh
