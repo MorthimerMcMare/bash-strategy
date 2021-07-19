@@ -12,12 +12,22 @@ elif [[ -z ${GAME_BASH_STRATEGY+x} ]]; then
 fi
 
 
-# Captures base only if object exists, can move and a tile has a "freebase" attribute:
-#(I forgot about "do-not-capture-you-own-base" rule, yeah).
-if [[ ! -z ${OBJECTS[$1]} && (( ${OBJECTSMOVE[$1]} > 0 )) && ( ${TILEATTRS[${FIELD[$1]}]} == *"occupablebase"* ) ]]; then
+# Captures base only if:
+#  - Object exists and can move, and
+#  - A tile has a "freebase" attribute, and
+#  - Tile is not this player's base:
+[ -z "${OBJECTS[$1]}" ] && return 1
+
+CUROBJECTTEAM=$(. obj_getattr.sh "$1" "team")
+if [[ ${TILEATTRS[${FIELD[$1]}]} == *"occupablebase"* && ${FIELD[$1]:$((${#FIELD[$1]} - 1))} != $CUROBJECTTEAM ]]; then
+	TILEEXPRESSION=1
+else
+	TILEEXPRESSION=0
+fi
+
+if [[ (( ${OBJECTSMOVE[$1]} > 0 )) && (( $TILEEXPRESSION == 1 )) ]]; then
 	CELLY=$(( $(echo "$1" | cut -d"," -f1) + $SCREENMINY ))
 	CELLX=$(( $(echo "$1" | cut -d"," -f2) + $SCREENMINX ))
-	CUROBJECTTEAM=$(. obj_getattr.sh "$1" "team")
 
 	echo -ne "\e[?25l" # Hides cursor.
 
