@@ -108,6 +108,7 @@ showaltfield() {
 	source drawfield.sh "$1"
 
 	echo -ne "\e[?25h\e[$(($ROWS - 3));1HPress any key to continue... "
+	[ "$1" != "noobjects" ] && echo -ne "\e[$(($CURY + $SCREENMINY));$(($CURX + $SCREENMINX))H"
 	read -n1 -s
 
 	echo -ne "\e[$(($ROWS - 3));1H                             \e[?25l"
@@ -167,7 +168,7 @@ case $KEYPR in
 		"[15;2~") # Shift-F5 (show map layer)
 			showaltfield "noobjects" ;;
 		*)
-			echo "Escape sequence postfix: \"$ESCSEQ\"."
+			#echo "Escape sequence postfix: \"$ESCSEQ\"."
 		;; # of *)
 	esac
 ;; # of "^[")

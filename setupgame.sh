@@ -175,18 +175,18 @@ setupField() {
 
 
 # "Utils" (for the "cut" command):
-CLASS_SYMBOL="-f1"
-CLASS_MAXHP="-f2"
-CLASS_ATK="-f3"
-CLASS_BATK="-f4"
-CLASS_COST="-f5"
-CLASS_RANGE="-f6"
-CLASS_ATTR="-f7"
+readonly CLASS_SYMBOL="-f1"
+readonly CLASS_MAXHP="-f2"
+readonly CLASS_ATK="-f3"
+readonly CLASS_BATK="-f4"
+readonly CLASS_COST="-f5"
+readonly CLASS_RANGE="-f6"
+readonly CLASS_ATTR="-f7"
 
 FIELDMAXX=0
 FIELDMAXY=0
-SCREENMINX=10
-SCREENMINY=5
+SCREENMINX=15
+SCREENMINY=3
 
 ROWS=$(stty size | cut -d" " -f1)
 
@@ -195,6 +195,7 @@ CURX=0
 CURY=0
 
 CURMODE="cursor" # "cursor", "move", "target", "inbase".
+PREVMODE=""
 
 # Clear all previous potencially set variables:
 source clearvariables.sh

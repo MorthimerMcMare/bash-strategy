@@ -12,6 +12,8 @@ while [[ $GAME_BASH_STRATEGY != "exit" ]]; do
 	source input.sh
 	source drawui.sh
 
+	PREVMODE=$CURMODE
+
 	source input_util.sh "flush"
 	source input_util.sh "echo on"
 done
