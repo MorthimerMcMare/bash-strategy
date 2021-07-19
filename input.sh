@@ -7,7 +7,7 @@
 # s down		: Move cursor/object down (in base: select next unit)
 # d right		: Move cursor/object right (in base: select next unit)
 # space enter kp5 : Action key: toggle cursor/object (in base: select unit to produce)
-# f 1 kp1		: Attack/fire key
+# f 1 kp1 t		: Attack/fire key
 #
 # e tab dot	kp9	: Next object
 # q shift-tab comma kp7 : Prev object
@@ -104,7 +104,7 @@ capturebasekey() {
 	fi
 }
 
-showaltfield() {
+showaltfieldkey() {
 	source drawfield.sh "$1"
 
 	echo -ne "\e[?25h\e[$(($ROWS - 3));1HPress any key to continue... "
@@ -115,6 +115,12 @@ showaltfield() {
 	source drawfield.sh "default"
 }
 
+# Temporarily.
+ForWIP_showKeycode() {
+	[ "$2" != "esc" ] && echo "Other: \"$1\"." || echo "Escape sequence postfix: \"$1\"."
+	echo -ne "\e[?25h"
+	source input_util.sh "startecho"
+}
 
 echo -ne "\e[?25h"
 
@@ -132,18 +138,18 @@ case $KEYPR in
 "a") moveobjkey "x" "-" ;;
 "s") moveobjkey "y" "+" ;;
 "d") moveobjkey "x" "+" ;;
-"1"|"f") attackkey ;;
+"1"|"f"|"t") attackkey ;;
 "") actionkey ;; # Space and enter won't write with "cat -vT"...
 "c"|"/"|"\\") capturebasekey ;;
 
 "^L"|"^R")
-	source drawui.sh "updatepositions" "field" "unitspanel"
+	source drawui.sh "updatepositions" "updatescreen" "field" "unitspanel"
 ;;
 "h")
-	showaltfield "objectshp"
+	showaltfieldkey "objectshp"
 ;;
 "m")
-	showaltfield "noobjects"
+	showaltfieldkey "noobjects"
 ;;
 
 
@@ -164,11 +170,12 @@ case $KEYPR in
 		"[F") attackkey ;; # Keypad "1"/"End" (when not numlock).
 		
 		"[15~") # F5 (show health)
-			showaltfield "objectshp" ;;
+			showaltfieldkey "objectshp" ;;
 		"[15;2~") # Shift-F5 (show map layer)
-			showaltfield "noobjects" ;;
-		*)
-			#echo "Escape sequence postfix: \"$ESCSEQ\"."
+			showaltfieldkey "noobjects" ;;
+
+		*) # I also use that file for recognize extended keyboard codes, why not?
+			[ -z ${GAME_BASH_STRATEGY+x} ] && ForWIP_showKeycode "$ESCSEQ" "esc"
 		;; # of *)
 	esac
 ;; # of "^[")
@@ -176,6 +183,6 @@ case $KEYPR in
 
 # Other:
 *)
-	#echo "Other ($KEYPR)"
+	[ -z ${GAME_BASH_STRATEGY+x} ] && ForWIP_showKeycode "$KEYPR" "normal"
 ;; # of *)
 esac

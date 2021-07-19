@@ -60,6 +60,10 @@ while [ "$1" ]; do
 			INFOBARY=$(( $SCREENMINY + $FIELDMAXY + 2 ))
 			INFOBARLOCKY=$(( INFOBARY + 3 ))
 			;;
+		"updatescreen")
+			PREVMODE="clrscr();"
+			clear
+			;;
 		*) echo "drawui(): warning: unrecognized option \"$1\"."
 			;;
 	esac
