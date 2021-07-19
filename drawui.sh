@@ -31,18 +31,18 @@ framecaptions() {
 drawinfobar() {
 	[ "$2" == "2" ] && OFS=$INFOBARLOCKY || OFS=$INFOBARY
 
-	if [ "$PREVPOS" != "$1" ]; then
+	if [ "$INFOBARCACHEPREVPOS" != "$1" ]; then
 		STR1="${OBJECTS[$1]}\e[0m: hp ${OBJECTSHP[$1]}/$(. obj_getattr.sh $1 maxhp), "
 		STR1=$STR1"atk $(. obj_getattr.sh $1 attack)($(. obj_getattr.sh $1 backfire))"
 		STR2="Moves: ${OBJECTSMOVE[$1]}/$(. obj_getattr.sh $1 range)"
 
-		PREVPOS="$1"
-		PREVSTR1="$STR1"
-		PREVSTR2="$STR2"
+		INFOBARCACHEPREVPOS="$1"
+		INFOBARCACHEPREVSTR1="$STR1"
+		INFOBARCACHEPREVSTR2="$STR2"
 	fi
 
-	echo -ne "\e[$OFS;${INFOBARX}H\e[${OBJECTSCOLOR[$1]}m$PREVSTR1                \
-\e[$(( $OFS + 1 ));${INFOBARX}H$PREVSTR2                "
+	echo -ne "\e[$OFS;${INFOBARX}H\e[${OBJECTSCOLOR[$1]}m$INFOBARCACHEPREVSTR1                \
+\e[$(( $OFS + 1 ));${INFOBARX}H$INFOBARCACHEPREVSTR2                "
 }
 
 # Special parameters (if any):

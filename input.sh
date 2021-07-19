@@ -9,11 +9,11 @@
 # space enter kp5 : Action key: toggle cursor/object (in base: select unit to produce)
 # f 1 kp1 t		: Attack/fire key
 #
-# e tab dot	kp9	: Next object
-# q shift-tab comma kp7 : Prev object
+# e tab dot rsqbracket kp9 : Next object
+# q shift-tab comma lsqbracket kp7 : Prev object
 # E	greater kp+	: Next base
 # Q	less kp-	: Prev base
-# c	slash bslash: Capture base
+# c	slash bslash 0 kp0/ins: Capture base (in base: cancel)
 # X doublequotes: End turn
 #
 # F1			: Help
@@ -140,7 +140,7 @@ case $KEYPR in
 "d") moveobjkey "x" "+" ;;
 "1"|"f"|"t") attackkey ;;
 "") actionkey ;; # Space and enter won't write with "cat -vT"...
-"c"|"/"|"\\") capturebasekey ;;
+"c"|"/"|"\\"|"0") capturebasekey ;;
 
 "^L"|"^R")
 	source drawui.sh "updatepositions" "updatescreen" "field" "unitspanel"
@@ -166,9 +166,11 @@ case $KEYPR in
 		"[D") moveobjkey "x" "-" ;; # | Arrow keys
 		"[B") moveobjkey "y" "+" ;; # |
 		"[C") moveobjkey "x" "+" ;; # /
+
 		"[E") actionkey ;; # Keypad "5" (when not numlock).
 		"[F") attackkey ;; # Keypad "1"/"End" (when not numlock).
-		
+		"[2~") capturebasekey ;; # Keypad "0"/"Ins" (when not numlock).
+
 		"[15~") # F5 (show health)
 			showaltfieldkey "objectshp" ;;
 		"[15;2~") # Shift-F5 (show map layer)

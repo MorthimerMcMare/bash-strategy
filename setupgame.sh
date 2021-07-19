@@ -224,11 +224,11 @@ clear
 source obj_create.sh "Light tank" "1" "2,2"
 source obj_create.sh "Trike" "1" "2,4"
 source obj_create.sh "Amphybia" "1" "3,3"
+source obj_create.sh "Light tank" "1" "4,7"
 
 source obj_create.sh "Rocket launcher" "2" "5,4"
 source obj_create.sh "Heavy tank" "2" "3,7"
 source obj_create.sh "BTR" "2" "4,1"
-source obj_create.sh "Light tank" "2" "4,7"
 
 #source drawfield.sh "(from setupgame.sh)"
 

@@ -26,7 +26,15 @@ cleartargetmode() {
 	CURMODE="$PRETARGETMODE"
 
 	# If attacker dies:
-	[[ -z ${OBJECTS[$TARGETERPOS]} ]] && CURMODE="cursor"
+	if [ -z "${OBJECTS[$TARGETERPOS]}" ]; then
+		CURMODE="cursor"
+
+		# This one line seems like clutch. It is clutch!
+		#(If serious, it needed to force update cached string with old wrong 
+		#target's HP. Maybe it's better to create separated force-mode variable,
+		#or write a simple cache manager for each future memory case?):
+		INFOBARCACHEPREVPOS=""
+	fi
 
 	unset TARGETERTEAM
 	unset TARGETERPOS
@@ -82,7 +90,7 @@ case $1 in
 		;;
 	"tryattack")
 		#if [[ $CANATTACK && ${OBJECTS[$2]} && $(. obj_getattr.sh "$2" "team") != $TARGETERTEAM ]]; then
-		
+
 		[ $CANATTACK ] && source obj_attack.sh "$TARGETERPOS" "$2"
 
 		cleartargetmode

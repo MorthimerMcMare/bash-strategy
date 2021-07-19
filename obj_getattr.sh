@@ -21,9 +21,6 @@ case "$2" in
 	"symbol"|"symb")
 		echo "$PROPSSTR" | cut $CLASS_SYMBOL
 		;;
-	"hp"|"health")
-		echo "${OBJECTSHP[$1]}"
-		;;
 	"maxhp"|"maxhealth")
 		echo "$PROPSSTR" | cut $CLASS_MAXHP
 		;;
@@ -39,9 +36,6 @@ case "$2" in
 	"backfire"|"batk")
 		echo "$PROPSSTR" | cut $CLASS_BATK
 		;;
-	"color")
-		echo "${OBJECTSCOLOR[$1]}"
-		;;
 	"team")
 		echo $(( "${OBJECTSCOLOR[$1]}" % 10 ))
 		;;
@@ -50,6 +44,12 @@ case "$2" in
 		;;
 	"attr"*)
 		echo "${CLASSATTRS[${OBJECTS[$1]}]}"
+		;;
+	"hp"|"health")
+		echo "${OBJECTSHP[$1]}"
+		;;
+	"color")
+		echo "${OBJECTSCOLOR[$1]}"
 		;;
 	*)
 		echo "Warning: unknown property \"$2\"."

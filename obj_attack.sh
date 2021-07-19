@@ -13,27 +13,41 @@ elif [[ -z ${GAME_BASH_STRATEGY+x} ]]; then
 fi
 
 
+absdelta() {
+	#ATKY=$(echo "$1" | cut -d"," -f1)
+	#ATKX=$(echo "$1" | cut -d"," -f2)
+	(( $1 - $2 < 0 )) && echo $(( $2 - $1 )) || echo $(( $1 - $2 ))
+}
+
+
 if [[ ! ( -z ${OBJECTS[$1]} || -z ${OBJECTS[$2]} ) && (( ${OBJECTSMOVE[$1]} > 0 )) ]]; then
 	OBJ1ATTR="$(. obj_getattr.sh "$1" "attr")"
 	OBJ2ATTR="$(. obj_getattr.sh "$2" "attr")"
-	ATTACKRANGE=1
+	#ATTACKRANGE=1
 	BACKFIRERANGE=1
+	XYDELTA=1
+
 
 	#OBJECTSMOVE[$1]=$(( ${OBJECTSMOVE[$1]} - 1 ))
 
 	# Check for attack range modifiers:
 	if [[ $OBJ1ATTR == *"atkRange:"* ]]; then
-		ATTACKRANGE=$(echo "$OBJ1ATTR" | sed "s/.*atkRange:\([[:digit:]]\)\+.*/\1/1")  #"#
+		#ATTACKRANGE=$(echo "$OBJ1ATTR" | sed "s/.*atkRange:\([[:digit:]]\)\+.*/\1/1")  #"#
 
 		if [[ $OBJ2ATTR == *"atkRange:"* ]]; then
 			BACKFIRERANGE=$(echo "$OBJ2ATTR" | sed "s/.*atkRange:\([[:digit:]]\)\+.*/\1/1")  #"#
 		fi
+
+		# Use of non-described variables isn't a goot idea, actually...
+		#"$CUR_" varibles is a target position (assigned in "input_targetmode.sh");
+		#"$TARGETER_" varibles is an attacker position (assigned in the same file).
+		XYDELTA=$(( $(absdelta "$CURX" "$TARGETERX") + $(absdelta "$CURY" "$TARGETERY") ))
 	fi
 
 	OBJECTSHP[$2]=$(( ${OBJECTSHP[$2]} - $(. obj_getattr.sh "$1" "atk") ))
 	source tile_explode.sh "$2"
 
-	if (( $BACKFIRERANGE >= $ATTACKRANGE )); then
+	if (( $BACKFIRERANGE >= $XYDELTA )); then
 		OBJECTSHP[$1]=$(( ${OBJECTSHP[$1]} - $(. obj_getattr.sh "$2" "batk") ))
 		source tile_explode.sh "$1"
 
