@@ -30,9 +30,11 @@ if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY && (( ${OBJE
 
 			# Check for "[im]passible" attribute prefix isn't needed, because
 			#"$i" has no excess symbols at the beginnig of the string.
-			if [[ $i == "passible:"* && ( "$OBJATTR" == *"passattr:$(echo \"$i\" | cut -d":" -f2 )"* ) ]]; then
+			if [[ $i == "passible:"* && ( "$OBJATTR" == *"passattr:$(echo $i | cut -d":" -f2 )"* ) ]]; then
 				PASSIBILITY=1
 			fi
+			
+			#echo "\"$i\"/\"$OBJATTR\"/\"$(echo $i | cut -d":" -f2 )\""
 		done
 	fi
 

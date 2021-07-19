@@ -26,7 +26,7 @@ cleartargetmode() {
 	CURMODE="$PRETARGETMODE"
 
 	# If attacker dies:
-	[[ ! -z ${OBJECTS[$TARGETERPOS]} ]] && CURMODE="cursor"
+	[[ -z ${OBJECTS[$TARGETERPOS]} ]] && CURMODE="cursor"
 
 	unset TARGETERTEAM
 	unset TARGETERPOS
@@ -49,6 +49,7 @@ case $1 in
 			TARGETERX=$(( $(echo "$2" | cut -d"," -f2) ))
 			TARGETERPOS="$TARGETERY,$TARGETERX"
 			TARGETERTEAM=$(. obj_getattr.sh "$TARGETERPOS" "team")
+			CANATTACK=""
 		fi
 		;;
 	"draw")
@@ -61,14 +62,16 @@ case $1 in
 		TARGETERATTR="$(. obj_getattr.sh "$TARGETERPOS" "attr")"
 
 		if [[ $TARGETERATTR == *"atkRange:"* ]]; then
-			ATTACKRANGE=$(echo "$TARGETERATTR" | sed "s/atkRange:\([[:digit:]]\)+/\1/1")  #"#
+			ATTACKRANGE=$(echo $TARGETERATTR | sed "s/.*atkRange:\([0123456789]\)\+.*/\1/1")  #"#
 		fi
 
 		# Red if out of range, gray if no object, and yellow on 
 		TARGETCOLOR=31
+		CANATTACK=""
 		if (( $XDELTA + $YDELTA <= $ATTACKRANGE )); then
 			if [[ ${OBJECTS[$2]} && $(. obj_getattr.sh "$2" "team") != $TARGETERTEAM ]]; then
 				TARGETCOLOR=93
+				CANATTACK="yes"
 			else
 				TARGETCOLOR=37
 			fi
@@ -78,11 +81,10 @@ case $1 in
 		echo -e "\e[$CURYOFS;${CURXOFS}H\e[${TARGETCOLOR}mX\e[0m"
 		;;
 	"tryattack")
-		#echo "targ OBJECTS[$2]: \"${OBJECTS[$2]}\"" && echo "targ OBJECTSHP[$2]: \"${OBJECTSHP[$2]}\"" && sleep 1
-		if [[ ${OBJECTS[$2]} && $(. obj_getattr.sh "$2" "team") != $TARGETERTEAM ]]; then
-			source obj_attack.sh "$TARGETERPOS" "$2"
-		fi
-		#echo "x OBJECTS[$2]: \"${OBJECTS[$2]}\"" && echo "x OBJECTSHP[$2]: \"${OBJECTSHP[$2]}\"" && sleep 1
+		#if [[ $CANATTACK && ${OBJECTS[$2]} && $(. obj_getattr.sh "$2" "team") != $TARGETERTEAM ]]; then
+		
+		[ $CANATTACK ] && source obj_attack.sh "$TARGETERPOS" "$2"
+
 		cleartargetmode
 		;;
 	"cancel")
