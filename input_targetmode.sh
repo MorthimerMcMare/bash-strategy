@@ -53,17 +53,14 @@ case $1 in
 		if [[ ${OBJECTS[$2]} ]]; then
 			PRETARGETMODE="$CURMODE"
 			CURMODE="target"
-			TARGETERY=$(( $(echo "$2" | cut -d"," -f1) ))
-			TARGETERX=$(( $(echo "$2" | cut -d"," -f2) ))
+			TARGETERY=${2%,*}
+			TARGETERX=${2#*,}
 			TARGETERPOS="$TARGETERY,$TARGETERX"
 			TARGETERTEAM=$(. obj_getattr.sh "$TARGETERPOS" "team")
 			CANATTACK=""
 		fi
 		;;
 	"draw")
-		CURYOFS=$(( $CURY + $SCREENMINY ))
-		CURXOFS=$(( $CURX + $SCREENMINX ))
-
 		ATTACKRANGE=1
 		XDELTA=$(absdelta "$CURX" "$TARGETERX")
 		YDELTA=$(absdelta "$CURY" "$TARGETERY")
@@ -85,8 +82,10 @@ case $1 in
 			fi
 		fi
 
-		echo -ne "\e[?25l"
-		echo -e "\e[$CURYOFS;${CURXOFS}H\e[${TARGETCOLOR}mX\e[0m"
+		SCRY=$(( $CURY + $SCREENMINY ))
+		SCRX=$(( $CURX + $SCREENMINX ))
+
+		echo -ne "\e[?25l\e[$SCRY;${SCRX}H\e[${TARGETCOLOR}mX\e[0m"
 		;;
 	"tryattack")
 		#if [[ $CANATTACK && ${OBJECTS[$2]} && $(. obj_getattr.sh "$2" "team") != $TARGETERTEAM ]]; then

@@ -111,6 +111,5 @@ esac
 
 
 # In-map cursor position draw:
-echo -ne "\e[?25h" # Shows cursor.
 echo -ne "\e[$(($CURY + $SCREENMINY));$(($CURX + $SCREENMINX))H"
 

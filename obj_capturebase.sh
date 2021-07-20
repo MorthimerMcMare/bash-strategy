@@ -19,26 +19,24 @@ fi
 [ -z "${OBJECTS[$1]}" ] && return 1
 
 CUROBJECTTEAM=$(. obj_getattr.sh "$1" "team")
-if [[ ${TILEATTRS[${FIELD[$1]}]} == *"occupablebase"* && ${FIELD[$1]:$((${#FIELD[$1]} - 1))} != $CUROBJECTTEAM ]]; then
+if [[ ${TILEATTRS[${FIELD[$1]}]} == *"occupablebase"* && ${FIELD[$1]: -1} != $CUROBJECTTEAM ]]; then
 	TILEEXPRESSION=1
 else
 	TILEEXPRESSION=0
 fi
 
 if [[ (( ${OBJECTSMOVE[$1]} > 0 )) && (( $TILEEXPRESSION == 1 )) ]]; then
-	CELLY=$(( $(echo "$1" | cut -d"," -f1) + $SCREENMINY ))
-	CELLX=$(( $(echo "$1" | cut -d"," -f2) + $SCREENMINX ))
-
 	echo -ne "\e[?25l" # Hides cursor.
 
 	FIELD[$1]="PlayerBase$CUROBJECTTEAM"
 	source drawfield.sh "updatecache" "$1"
 
-	CAPSYMBOL="$(. obj_getattr.sh "$1" "symb")"
-	#echo -ne "\e[7;${OBJECTSCOLOR[$1]}m$(. obj_getattr.sh "$1" "symb")\e[0m"
+	# For demo files.
+	echo -ne "\e[$(( ${1%,*} + $SCREENMINY ));$(( ${1#*,} + $SCREENMINX ))H"
+
+	CAPSYMBOL="$(. obj_getattr.sh $1 symb)"
 	for (( i_capb = 0; i_capb < 10; i_capb++ )); do
-		echo -ne "\e[$CELLY;${CELLX}H"
-		echo -ne "\e[$(( $i_capb % 2 * 7 ));97m$CAPSYMBOL\e[0m"
+		echo -ne "\e[$(( $i_capb % 2 * 7 ));97m$CAPSYMBOL\e[0m\e[1D"
 		sleep 0.02
 	done
 
@@ -49,11 +47,6 @@ if [[ (( ${OBJECTSMOVE[$1]} > 0 )) && (( $TILEEXPRESSION == 1 )) ]]; then
 
 	source drawfield.sh "default" "$1"
 
-	unset CELLX
-	unset CELLY
-
-	echo -ne "\e[?25h" # Shows cursor.
-	
 	return 0
 fi
 

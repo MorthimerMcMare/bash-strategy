@@ -34,8 +34,8 @@ setupTiles() {
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.*==g")
-		[[ -z "$LINE" ]] && continue
+		LINE=${LINE%//*}
+		[ -z "$LINE" ] && continue
 
 		NAME=$(printf "%s\n" "$LINE" | cut -f1)
 		SYMBOL=$(printf "%s\n" "$LINE" | cut -f2)
@@ -47,8 +47,8 @@ setupTiles() {
 			TILES[$NAME]="\\e[${COLOR}m${SYMBOL}\\e[0m"
 		fi
 
-		TILEATTRS[$NAME]="$(printf "%s\n" "$LINE" | cut -f4)"
-		#printf "Tile: %s\n" "$LINE"
+		# Get all after the last tab character:
+		TILEATTRS[$NAME]="${LINE#*	}"
 	done < $TILESFILE
 	unset LINE
 
@@ -66,31 +66,30 @@ setupObjectClasses() {
 	CURNAME=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.*==g")
+		LINE=${LINE%//*}
 		[ -z "$LINE" ] && continue
 
 		if [ -z "$CURCLASS" ]; then
-			CURCLASS=$(echo "$LINE" | cut -d":" -f1)
+			CURCLASS=${LINE%:*}
+			#CURCLASS=$(echo "$LINE" | cut -d":" -f1)
 			#"# For the MC colorer.
 
-			if [ ! -z "$CURCLASS" ]; then
-				# Write team info:
-				CLASSTEAMS[$CURCLASS]="$(echo "$LINE" | sed -e "s/.\+:\s\(.\+\)/\1/g" -e "s/\s/\t/g")"
-				#"# For the MC colorer...
-				#echo "${CLASSTEAMS[$CURCLASS]}"
-			fi
+			# Write team info:
+			[ "$CURCLASS" ] && CLASSTEAMS[$CURCLASS]=$(echo "${LINE#*:}" | tr " " "\t")
+			#echo "$CURCLASS: ${CLASSTEAMS[$CURCLASS]}"
 		else
-			CLASSPROPS[$CURCLASS]="\
-$(echo "$LINE" | cut -d" " $CLASS_SYMBOL)\
-	$(echo "$LINE" | cut -d" " $CLASS_MAXHP)\
-	$(echo "$LINE" | cut -d" " $CLASS_ATK)\
-	$(echo "$LINE" | cut -d" " $CLASS_BATK)\
-	$(echo "$LINE" | cut -d" " $CLASS_COST)\
-	$(echo "$LINE" | cut -d" " $CLASS_RANGE)"
+			CLASSPROPS[$CURCLASS:symb]="$(echo "$LINE" | cut -d" " $CLASS_SYMBOL)"
+			CLASSPROPS[$CURCLASS:maxhp]="$(echo "$LINE" | cut -d" " $CLASS_MAXHP)"
+			CLASSPROPS[$CURCLASS:atk]="$(echo "$LINE" | cut -d" " $CLASS_ATK)"
+			CLASSPROPS[$CURCLASS:batk]="$(echo "$LINE" | cut -d" " $CLASS_BATK)"
+			CLASSPROPS[$CURCLASS:cost]="$(echo "$LINE" | cut -d" " $CLASS_COST)"
+			CLASSPROPS[$CURCLASS:range]="$(echo "$LINE" | cut -d" " $CLASS_RANGE)"
 
+			# Class attributes are also separated by space, so with current 
+			#file structure variant I cannot use here bash substrings.
 			CLASSATTRS[$CURCLASS]="$(echo "$LINE" | cut $CLASS_ATTR)"
 
-			#echo "$CURCLASS: ${CLASSPROPS[$CURCLASS]}"
+			#echo "$CURCLASS: ${CLASSPROPS[$CURCLASS:atk]}"
 			CURCLASS=""
 		fi
 
@@ -110,12 +109,11 @@ setupField() {
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=$(printf "%s\n" "$LINE" | sed -e "s=\/\/.*==g")
-		[[ -z "$LINE" ]] && continue
+		LINE=${LINE%//*}
+		[ -z "$LINE" ] && continue
 
 		# Get the current map section and cnvert it to the lowercase:
-		[[ "${LINE:0:1}" == '[' ]] && CURMAPSECTION=$(echo $LINE | sed "s/\[\(.\{2,20\}\)\]/\L\1/1") && continue
-		#"# Required by the MC colorer.
+		[[ "${LINE:0:1}" == '[' && ${LINE: -1} == ']' ]] && declare -l CURMAPSECTION="${LINE:1: -1}" && continue
 		#echo \"$LINE\" / \"$CURMAPSECTION\"
 
 		case $CURMAPSECTION in
@@ -123,10 +121,10 @@ setupField() {
 				setupTiles $LINE
 				;;
 			"aliases")
-				FIELDALIASES["$(echo $LINE | cut -d" " -f2)"]="$(echo $LINE | cut -d" " -f1)"
+				FIELDALIASES["${LINE#* }"]="${LINE% *}"
 				;;
 			"players")
-				CURPLAYER=$(echo $LINE | cut -d" " -f1)
+				CURPLAYER=${LINE% *}
 				# Black and white aren't presented here.
 				if [[ "$CURPLAYER" < "1" || "$CURPLAYER" > "6" ]]; then
 					CURPLAYER=$(( $(echo $RANDOM) % 7 + 1 ))
@@ -134,7 +132,7 @@ setupField() {
 				# Randomly changes the player color intensity:
 				#CURPLAYER=$(( $CURPLAYER + $(echo $RANDOM) % 2 * 60 ))
 				PLAYERS[$CURPLAYER]="$CURPLAYER"
-				PLAYERSINFO[$CURPLAYER]=$(echo $LINE | cut -d" " -f2)
+				PLAYERS[$CURPLAYER:money]=${LINE#* }
 
 				CURPLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
@@ -145,10 +143,12 @@ setupField() {
 				echo "setupField(): player $CURPLAYER added."
 				;;
 			"map")
+				# Set a level width as in the first occured map line:
 				(( $FIELDMAXX == 0 )) && FIELDMAXX=${#LINE}
+
 				if (( $FIELDMAXX != ${#LINE} )); then
-					echo "setupField(): warning: different field X ($FIELDMAXX known, ${#LINE} get)."
-					sleep 0.5
+					echo "setupField(): warning: different field X in line \"$LINE\" ($FIELDMAXX known, ${#LINE} get)."
+					sleep 1
 				fi
 
 				for (( x = 0; x < FIELDMAXX; x++ )); do
@@ -181,7 +181,7 @@ readonly CLASS_ATK="-f3"
 readonly CLASS_BATK="-f4"
 readonly CLASS_COST="-f5"
 readonly CLASS_RANGE="-f6"
-readonly CLASS_ATTR="-f7"
+readonly CLASS_ATTR="-f7-"
 
 FIELDMAXX=0
 FIELDMAXY=0
@@ -189,6 +189,7 @@ SCREENMINX=15
 SCREENMINY=3
 
 ROWS=$(stty size | cut -d" " -f1)
+
 
 # Current cursor x and y:
 CURX=0
@@ -211,9 +212,12 @@ declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
 #"$OBJECTSCOLOR" is also the object team (as "($OBJECTCOLORS % 10)").
 declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE && declare -g -A OBJECTSCOLOR
 
-# Players info (player color and a money value it has):
-# (It seems like this arrays mustn't be associative?)
-declare -g -A PLAYERS && declare -g -A PLAYERSINFO
+# Players info:
+# PLAYERS[X] is a "X".
+# PLAYERS[X:money] is a X'th player current wealth.
+# PLAYERBASES[X:Y] is an array[0..Y] of the "$x,$y" pairs of X's bases.
+# PLAYERS[X:curbase] is an index in the $PLAYERBASES array.
+declare -g -A PLAYERS && declare -g -a PLAYERBASES
 
 
 setupField "$1"
@@ -253,6 +257,5 @@ source obj_move.sh "2,7" "2,6"  && sleep 0.4
 source obj_move.sh "2,6" "2,5"  && sleep 0.4
 source obj_capturebase.sh "2,5"  && sleep 0.4
 
-echo -ne "\e[?25h" # Shows cursor.
 : ' #'
 

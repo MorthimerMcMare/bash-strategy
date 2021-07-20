@@ -7,34 +7,30 @@ if [[ -z "$2" || ! -z "$3" ]]; then
 	echo "obj_move(): wrong number of arguments."
 	echo "Usage: <int:srcx>,<int:srcy> <int:destx>,<int:desty>."
 	source shutdown.sh error
-elif [[ -z ${GAME_BASH_STRATEGY+x} ]]; then
+elif [[ -z "${GAME_BASH_STRATEGY+x}" ]]; then
 	echo "obj_move(): game not launched."
 	source shutdown.sh error
 fi
 
-#SRCY=$(echo "$1" | cut -d"," -f1)
-#SRCX=$(echo "$1" | cut -d"," -f2)
-DSTY=$(echo "$2" | cut -d"," -f1)
-DSTX=$(echo "$2" | cut -d"," -f2)
 
+[[ ${2#*,} < $FIELDMAXX && ${2%,*} < $FIELDMAXY ]] && INBOUNDSEXPR="true" || INBOUNDSEXPR=""
 
-if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY && (( ${OBJECTSMOVE[$1]} > 0 )) ]]; then
-	TILEATTR=${TILEATTRS[${FIELD[$2]}]}
-	OBJATTR="$(. obj_getattr.sh "$1" "attr")"
+if [[ -z ${OBJECTS[$2]} && "$INBOUNDSEXPR" && (( ${OBJECTSMOVE[$1]} > 0 )) ]]; then
+	TILEATTR="${TILEATTRS[${FIELD[$2]}]}"
+	OBJATTR="$(. obj_getattr.sh $1 attr)"
+
 	PASSIBILITY=1
 
 	# If a tile has a pass-modifier, we must check all of the attributes:
 	if [[ $TILEATTR == *"passible"* ]]; then
 		for i in $(echo "$TILEATTR"); do
-			[[ $i == "impassible" ]] && PASSIBILITY=0
+			[ $i == "impassible" ] && PASSIBILITY=0
 
 			# Check for "[im]passible" attribute prefix isn't needed, because
 			#"$i" has no excess symbols at the beginnig of the string.
-			if [[ $i == "passible:"* && ( "$OBJATTR" == *"passattr:$(echo $i | cut -d":" -f2 )"* ) ]]; then
+			if [[ $i == "passible:"* && ( "$OBJATTR" == *"passattr:${i#*:}"* ) ]]; then
 				PASSIBILITY=1
 			fi
-			
-			#echo "\"$i\"/\"$OBJATTR\"/\"$(echo $i | cut -d":" -f2 )\""
 		done
 	fi
 
@@ -55,8 +51,7 @@ if [[ -z ${OBJECTS[$2]} && $DSTX < $FIELDMAXX && $DSTY < $FIELDMAXY && (( ${OBJE
 
 		return 0
 	fi
-#else
-#	echo -e "NOT MOVED (src:$1; dst:$2)"
+#else; echo -e "NOT MOVED (src:$1; dst:$2)"
 fi
 
 return 1

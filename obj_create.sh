@@ -13,12 +13,12 @@ elif [[ -z ${GAME_BASH_STRATEGY+x} ]]; then
 	source shutdown.sh error
 fi
 
-Y=$(echo "$2" | cut -d"," -f1)
-X=$(echo "$2" | cut -d"," -f2)
+CELLY=${2%,*}
+CELLX=${2#*,}
 # Is spawnee object belongs to the team specified in the second argument:
 [[ $(echo "${CLASSTEAMS[$1]}" | grep -c "$2") == "1" ]] && TEAMSEXPRESSION=1 || TEAMSEXPRESSION=0
 
-if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $X < $FIELDMAXX && $Y < $FIELDMAXY ]]; then
+if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $CELlX < $FIELDMAXX && $CELLY < $FIELDMAXY ]]; then
 	OBJECTS[$3]="$1"
 	OBJECTSHP[$3]=$(. obj_getattr.sh "$3" "maxhp")
 	OBJECTSMOVE[$3]=$(. obj_getattr.sh "$3" "range")

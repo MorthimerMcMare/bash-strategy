@@ -13,31 +13,29 @@ elif [[ -z ${GAME_BASH_STRATEGY+x} ]]; then
 fi
 
 # Convert argument type string to lowercase:
-ATTR=$(echo "$2" | sed 's/\(.*\)/\L\1/')	#'# For the MC colorer.
-
-PROPSSTR="${CLASSPROPS[${OBJECTS[$1]}]}"
+declare -l ATTR="$2"
 
 case "$2" in
-	"symbol"|"symb")
-		echo "$PROPSSTR" | cut $CLASS_SYMBOL
+	"symb"*)
+		echo "${CLASSPROPS[${OBJECTS[$1]}:symb]}"
 		;;
 	"maxhp"|"maxhealth")
-		echo "$PROPSSTR" | cut $CLASS_MAXHP
+		echo "${CLASSPROPS[${OBJECTS[$1]}:maxhp]}"
 		;;
 	"cost"|"price")
-		echo "$PROPSSTR" | cut $CLASS_COST
+		echo "${CLASSPROPS[${OBJECTS[$1]}:cost]}"
 		;;
 	"range"|"speed")
-		echo "$PROPSSTR" | cut $CLASS_RANGE
+		echo "${CLASSPROPS[${OBJECTS[$1]}:range]}"
 		;;
 	"attack"|"atk"|"damage")
-		echo "$PROPSSTR" | cut $CLASS_ATK
+		echo "${CLASSPROPS[${OBJECTS[$1]}:atk]}"
 		;;
 	"backfire"|"batk")
-		echo "$PROPSSTR" | cut $CLASS_BATK
+		echo "${CLASSPROPS[${OBJECTS[$1]}:batk]}"
 		;;
 	"team")
-		echo $(( "${OBJECTSCOLOR[$1]}" % 10 ))
+		echo "$(( "${OBJECTSCOLOR[$1]}" % 10 ))"
 		;;
 	"possibleteams"|"teams")
 		echo "${CLASSTEAMS[${OBJECTS[$1]}]}"
@@ -56,5 +54,4 @@ case "$2" in
 		;;
 esac
 
-unset PROPSSTR
 unset ATTR

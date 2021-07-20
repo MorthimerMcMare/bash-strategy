@@ -28,11 +28,6 @@ if [[ "$1" == "updatecache" || ( -z ${CACHEFIELD[exists]+x} ) ]]; then
 		done
 	else
 		CACHEFIELD[$COORDS]=$(echo -ne ${TILES[${FIELD[$COORDS]}]})
-		#echo
-		#echo "\$COORDS: $COORDS"
-		#echo "\${FIELD[$COORDS]}: ${FIELD[$COORDS]}"
-		#echo "\${TILES[${FIELD[$COORDS]}]}): ${TILES[${FIELD[$COORDS]}]}"
-		#echo "\${CACHEFIELD[$COORDS]}: ${CACHEFIELD[$COORDS]}"
 	fi
 
 	# Return without drawing.
@@ -57,35 +52,26 @@ if [[ -z "$2" ]]; then
 	# Objects layer:
 	if [[ "$1" == "objectshp" ]]; then
 		for curObj in "${!OBJECTS[@]}"; do
-			CELLY=$(( $(echo "$curObj" | cut -d"," -f1) + $SCREENMINY ))
-			CELLX=$(( $(echo "$curObj" | cut -d"," -f2) + $SCREENMINX ))
+			CELLY=$(( ${curObj%,*} + $SCREENMINY ))
+			CELLX=$(( ${curObj#*,} + $SCREENMINX ))
 			echo -ne "\e[$CELLY;${CELLX}H"
 			echo -ne "\e[${OBJECTSCOLOR[$curObj]}m${OBJECTSHP[$curObj]}\e[0m"
 		done
 	elif [[ "$1" != "noobjects" ]]; then
 		for curObj in "${!OBJECTS[@]}"; do
-			CELLY=$(( $(echo "$curObj" | cut -d"," -f1) + $SCREENMINY ))
-			CELLX=$(( $(echo "$curObj" | cut -d"," -f2) + $SCREENMINX ))
+			CELLY=$(( ${curObj%,*} + $SCREENMINY ))
+			CELLX=$(( ${curObj#*,} + $SCREENMINX ))
 			echo -ne "\e[$CELLY;${CELLX}H"
 			echo -ne "\e[${OBJECTSCOLOR[$curObj]}m$(. obj_getattr.sh $curObj symbol)\e[0m"
 		done
 	fi
 else
 	# One cell drawing.
-	CELLY=$(( $(echo "$2" | cut -d"," -f1) + $SCREENMINY ))
-	CELLX=$(( $(echo "$2" | cut -d"," -f2) + $SCREENMINX ))
+	CELLY=$(( ${2%,*} + $SCREENMINY ))
+	CELLX=$(( ${2#*,} + $SCREENMINX ))
+	#CELLY=$(( $(echo "$2" | cut -d"," -f1) + $SCREENMINY ))
+	#CELLX=$(( $(echo "$2" | cut -d"," -f2) + $SCREENMINX ))
 	echo -ne "\e[$CELLY;${CELLX}H"
-
-	# This variant is slower than the next one:
-	: 'if [ ! -z "${OBJECTS[$2]}" ]; then
-		if [ "$1" == "objectshp" ]; then
-			echo -ne "\e[${OBJECTSCOLOR[$2]}m${OBJECTSHP[$2]}\e[0m"
-		elif [ "$1" != "noobjects" ]; then
-			echo -ne "\e[${OBJECTSCOLOR[$2]}m$(. obj_getattr.sh $2 symbol)\e[0m"
-		fi
-	else
-		echo -n "${CACHEFIELD[$2]}"
-	fi'
 
 	if [[ "$1" == "objectshp" && ( ! -z ${OBJECTS[$2]} ) ]]; then
 		echo -ne "\e[${OBJECTSCOLOR[$2]}m${OBJECTSHP[$2]}\e[0m"
@@ -96,7 +82,3 @@ else
 	fi
 fi
 
-
-echo -e "\n\n\n\n\n\n\n\n" # (Temporal).
-
-#echo -ne "\e[?25h" # Shows cursor.
