@@ -3,7 +3,7 @@
 # "$1" must be a string type of the target mode action.
 # "$2" is a pair "$x,$y" of the target[er] coordinates.
 
-if [[ -z "$1" || ! -z "$3" ]]; then
+if [[ -z "$1" || "$3" ]]; then
 	echo "input_targetmode(): wrong number of arguments."
 	echo "Usage: <string:whattodo> [<int:targx>,<int:targy> (if needed)]."
 	echo "<string:whattodo> may be \"prepare\", \"draw\", \"tryattack\" or \"cancel\"."
@@ -70,7 +70,7 @@ case $1 in
 			ATTACKRANGE=$(echo $TARGETERATTR | sed "s/.*atkRange:\([0123456789]\)\+.*/\1/1")  #"#
 		fi
 
-		# Red if out of range, gray if no object, and yellow on 
+		# Red: out of range, gray: not shootable, yellow: potential victim.
 		TARGETCOLOR=31
 		CANATTACK=""
 		if (( $XDELTA + $YDELTA <= $ATTACKRANGE )); then

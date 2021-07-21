@@ -3,7 +3,7 @@
 # "$1" is a pair "$x,$y" of the attacker coordinates.
 # "$2" is a pair "$x,$y" of the target coordinates.
 
-if [[ -z "$2" || ! -z "$3" ]]; then
+if [[ -z "$2" || "$3" ]]; then
 	echo "obj_attack(): wrong number of arguments."
 	echo "Usage: <int:srcx>,<int:srcy> <int:targx>,<int:targy>."
 	source shutdown.sh error

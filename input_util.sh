@@ -13,7 +13,7 @@ case $1 in
 		;;
 	"flush")
 		while read -t0 UNUSED; do read -t0.001 UNUSED; done
-		#[ ! -z "$UNUSED" ] && echo "input_util(): ignored sequence postfix: $UNUSED" | cat -v && unset UNUSED
+		#[ "$UNUSED" ] && echo "input_util(): ignored sequence postfix: $UNUSED" | cat -v && unset UNUSED
 		;;
 	*) echo "input_util(): warning: unrecognized option \"$1\"."
 		;;

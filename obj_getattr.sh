@@ -3,7 +3,7 @@
 # "$1" must be a "$x,$y" pair.
 # "$2" is an attr to get.
 
-if [[ -z "$2" || ! -z "$3" ]]; then
+if [[ -z "$2" || "$3" ]]; then
 	echo "obj_getattr(): wrong number of arguments."
 	echo "Usage: <int:x>,<int:y> <string:attrtype>."
 	source shutdown.sh error

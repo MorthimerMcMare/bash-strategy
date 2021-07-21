@@ -4,7 +4,7 @@
 # "$2" is a belonging to a particular team (1..6).
 # "$3" must be a "$x,$y" pair.
 
-if [[ -z "$3" || ! -z "$4" ]]; then
+if [[ -z "$3" || "$4" ]]; then
 	echo "obj_create(): wrong number of arguments."
 	echo "Usage: <string:obj_type> <int_from1to6:obj_team> <int:x>,<int:y>."
 	source shutdown.sh error

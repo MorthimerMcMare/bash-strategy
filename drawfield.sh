@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ ! -z "$4" ]]; then
+if [[ "$4" ]]; then
 	echo "drawfield(): wrong number of arguments."
 	echo "Usage: [<string:whattodo>=\"\"] [<int:x>,<int:y>]."
 	echo "\"<string:whattodo>\" is \"default\" (or \"\"), \"updatecache\", \"objectshp\" or \"noobjects\"."
@@ -69,13 +69,11 @@ else
 	# One cell drawing.
 	CELLY=$(( ${2%,*} + $SCREENMINY ))
 	CELLX=$(( ${2#*,} + $SCREENMINX ))
-	#CELLY=$(( $(echo "$2" | cut -d"," -f1) + $SCREENMINY ))
-	#CELLX=$(( $(echo "$2" | cut -d"," -f2) + $SCREENMINX ))
 	echo -ne "\e[$CELLY;${CELLX}H"
 
-	if [[ "$1" == "objectshp" && ( ! -z ${OBJECTS[$2]} ) ]]; then
-		echo -ne "\e[${OBJECTSCOLOR[$2]}m${OBJECTSHP[$2]}\e[0m"
-	elif [[ "$1" != "noobjects" && ( ! -z ${OBJECTS[$2]} ) ]]; then
+	if [[ "$1" == "objectshp" && "${OBJECTS[$2]}" ]]; then
+		echo -ne "\e[${OBJECTSCOLOR[$2]}m$((32#${OBJECTSHP[$2]}))\e[0m"
+	elif [[ "$1" != "noobjects" && "${OBJECTS[$2]}" ]]; then
 		echo -ne "\e[${OBJECTSCOLOR[$2]}m$(. obj_getattr.sh $2 symbol)\e[0m"
 	else
 		echo -ne "${CACHEFIELD[$2]}"

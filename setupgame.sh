@@ -3,7 +3,7 @@
 # "$1" is a map file to load.
 # "$2" is a objects file to load.
 
-if [[ -z "$2" || ! -z "$3" ]]; then
+if [[ -z "$2" || "$3" ]]; then
 	echo "setupField(): wrong number of arguments."
 	echo "Usage: <string:map_filename> <string:objdata_filename>."
 	source shutdown.sh error
@@ -34,7 +34,7 @@ setupTiles() {
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=${LINE%//*}
+		LINE=${LINE%%//*}
 		[ -z "$LINE" ] && continue
 
 		NAME=$(printf "%s\n" "$LINE" | cut -f1)
@@ -47,8 +47,16 @@ setupTiles() {
 			TILES[$NAME]="\\e[${COLOR}m${SYMBOL}\\e[0m"
 		fi
 
-		# Get all after the last tab character:
-		TILEATTRS[$NAME]="${LINE#*	}"
+		# Parse attributes only in there's more than three tabs in the line
+		#("if ( len(LINE) - len(LINE_without_tabs) + 1 > 3 )  {...}"):
+		TEMPLINE="${LINE//	}"
+		if (( ${#LINE} - ${#TEMPLINE} + 1 > 3 )); then
+			# Get all after the last tab character:
+			TILEATTRS[$NAME]="${LINE##*	}"
+		else
+			TILEATTRS[$NAME]=""
+		fi
+
 	done < $TILESFILE
 	unset LINE
 
@@ -66,7 +74,7 @@ setupObjectClasses() {
 	CURNAME=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=${LINE%//*}
+		LINE=${LINE%%//*}
 		[ -z "$LINE" ] && continue
 
 		if [ -z "$CURCLASS" ]; then
@@ -109,7 +117,7 @@ setupField() {
 	LINE=""
 	while read -r LINE || [[ -n $LINE ]]; do
 		# Get rid of comments ("//") and empty lines:
-		LINE=${LINE%//*}
+		LINE=${LINE%%//*}
 		[ -z "$LINE" ] && continue
 
 		# Get the current map section and cnvert it to the lowercase:
@@ -133,12 +141,15 @@ setupField() {
 				#CURPLAYER=$(( $CURPLAYER + $(echo $RANDOM) % 2 * 60 ))
 				PLAYERS[$CURPLAYER]="$CURPLAYER"
 				PLAYERS[$CURPLAYER:money]=${LINE#* }
+				PLAYERS[${FILEDALIAS: -1}:curbase]=0
 
 				CURPLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
 				TILES[PlayerBase$CURPLAYER]="\\e[${CURPLAYERCOLOR}m${TILES[PlayerBase]}\\e[0m"
 				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
 				FIELDALIASES[$CURPLAYER]="PlayerBase$CURPLAYER"
+				
+				MAXPLAYERS=$(( $MAXPLAYERS + 1 ))
 
 				echo "setupField(): player $CURPLAYER added."
 				;;
@@ -153,7 +164,18 @@ setupField() {
 
 				for (( x = 0; x < FIELDMAXX; x++ )); do
 					CURCELL=${LINE:$x:1}
-					FIELD[$FIELDMAXY,$x]=${FIELDALIASES[$CURCELL]}
+					FIELDALIAS=${FIELDALIASES[$CURCELL]}
+					FIELD[$FIELDMAXY,$x]=$FIELDALIAS
+
+					# Set up quick access to player's bases (if such a tile):
+					if [[ "$FIELDALIAS" == "PlayerBase"* ]]; then
+						CURPLAYER="${FIELDALIAS: -1}"
+						source base_updatequickaccess.sh "$FIELDMAXY,$x" "$CURPLAYER"
+						#PLAYERBASES[$CURPLAYER:${PLAYERS[$CURPLAYER,curbase]}]="$FIELDMAXY,$x"
+
+						#echo ${PLAYERBASES[$CURPLAYER,${PLAYERS[$CURPLAYER,curbase]}]}
+						PLAYERS[$CURPLAYER:curbase]=$(( ${PLAYERS[$CURPLAYER:curbase]} + 1 ))
+					fi
 				done
 
 				FIELDMAXY=$(( $FIELDMAXY + 1 ))
@@ -198,6 +220,8 @@ CURY=0
 CURMODE="cursor" # "cursor", "move", "target", "inbase".
 PREVMODE=""
 
+TURN=1
+
 # Clear all previous potencially set variables:
 source clearvariables.sh
 
@@ -213,17 +237,20 @@ declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
 declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE && declare -g -A OBJECTSCOLOR
 
 # Players info:
+# MAXPLAYERS is an amount of players.
 # PLAYERS[X] is a "X".
 # PLAYERS[X:money] is a X'th player current wealth.
 # PLAYERBASES[X:Y] is an array[0..Y] of the "$x,$y" pairs of X's bases.
+# PLAYERBASES[X:count] is a maximal index of the X's bases.
 # PLAYERS[X:curbase] is an index in the $PLAYERBASES array.
-declare -g -A PLAYERS && declare -g -a PLAYERBASES
+declare MAXPLAYERS=1 && declare -g -A PLAYERS && declare -g -A PLAYERBASES
 
 
 setupField "$1"
 setupObjectClasses "$2"
 
 clear
+
 
 source obj_create.sh "Light tank" "1" "2,2"
 source obj_create.sh "Trike" "1" "2,4"

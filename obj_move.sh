@@ -3,7 +3,7 @@
 # "$1" is a pair "$x,$y" of the source coordinates.
 # "$2" is a pair "$x,$y" of the destination coordinates.
 
-if [[ -z "$2" || ! -z "$3" ]]; then
+if [[ -z "$2" || "$3" ]]; then
 	echo "obj_move(): wrong number of arguments."
 	echo "Usage: <int:srcx>,<int:srcy> <int:destx>,<int:desty>."
 	source shutdown.sh error

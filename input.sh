@@ -104,6 +104,30 @@ capturebasekey() {
 	fi
 }
 
+
+quickjumpkey() {
+	# "$1" is a "base" or "object";
+	# "$2" is a "+" or "-".
+
+	if [[ "$CURMODE" == "cursor" ]]; then
+		if [[ "$1" == "base" && ${PLAYERBASES[$TURN:count]} -gt 0 ]]; then
+			# Cycle current base index:
+			PLAYERS[$TURN:curbase]=$(( ${PLAYERS[$TURN:curbase]} "$2" 1 ))
+			(( ${PLAYERS[$TURN:curbase]} > ${PLAYERBASES[$TURN:count]} )) && PLAYERS[$TURN:curbase]=1
+			(( ${PLAYERS[$TURN:curbase]} < 1 )) && PLAYERS[$TURN:curbase]=${PLAYERBASES[$TURN:count]}
+			#echo "cur ${PLAYERS[$TURN:curbase]}: \"${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}\""
+
+			NEWPOS="${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}"
+			CURY=${NEWPOS%,*}
+			CURX=${NEWPOS#*,}
+
+		elif [ "$1" == "object" ]; then
+			command
+		fi
+
+	fi
+}
+
 showaltfieldkey() {
 	source drawfield.sh "$1"
 
@@ -115,12 +139,14 @@ showaltfieldkey() {
 	source drawfield.sh "default"
 }
 
+
 # Temporarily.
 ForWIP_showKeycode() {
 	[ "$2" != "esc" ] && echo "Other: \"$1\"." || echo "Escape sequence postfix: \"$1\"."
 	echo -ne "\e[?25h"
 	source input_util.sh "startecho"
 }
+
 
 echo -ne "\e[?25h"
 
@@ -139,8 +165,11 @@ case $KEYPR in
 "s") moveobjkey "y" "+" ;;
 "d") moveobjkey "x" "+" ;;
 "1"|"f"|"t") attackkey ;;
-"") actionkey ;; # Space and enter won't write with "cat -vT"...
+"") actionkey ;; # Space, enter and tab won't write with "cat -vT"...
 "c"|"/"|"\\"|"0") capturebasekey ;;
+
+"Q"|"<"|"+") quickjumpkey "base" "-" ;;
+"E"|">"|"-") quickjumpkey "base" "+" ;;
 
 "^L"|"^R")
 	source drawui.sh "updatepositions" "updatescreen" "field" "unitspanel"

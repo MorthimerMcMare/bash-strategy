@@ -2,7 +2,7 @@
 
 # "$1" is a pair "$x,$y" of the victim coordinates.
 
-if [[ -z "$1" || ! -z "$2" ]]; then
+if [[ -z "$1" || "$2" ]]; then
 	echo "obj_die(): wrong number of arguments."
 	echo "Usage: <int:objx>,<int:objy>."
 	source shutdown.sh error

@@ -1,7 +1,8 @@
 #!/bin/bash
 
+unset PLAYERBASES
 unset PLAYERS
-unset PLAYERSINFO
+unset MAXPLAYERS
 
 unset FIELD
 unset FIELDALIASES

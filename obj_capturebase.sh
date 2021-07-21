@@ -2,7 +2,7 @@
 
 # "$1" is a pair "$x,$y" of the object (and the base) coordinates.
 
-if [[ -z "$1" || ! -z "$2" ]]; then
+if [[ -z "$1" || "$2" ]]; then
 	echo "obj_capturebase(): wrong number of arguments."
 	echo "Usage: <int:objx>,<int:objy>."
 	source shutdown.sh error
@@ -30,6 +30,8 @@ if [[ (( ${OBJECTSMOVE[$1]} > 0 )) && (( $TILEEXPRESSION == 1 )) ]]; then
 
 	FIELD[$1]="PlayerBase$CUROBJECTTEAM"
 	source drawfield.sh "updatecache" "$1"
+
+	source base_updatequickaccess.sh "$1" "$TURN"
 
 	# For demo files.
 	echo -ne "\e[$(( ${1%,*} + $SCREENMINY ));$(( ${1#*,} + $SCREENMINX ))H"

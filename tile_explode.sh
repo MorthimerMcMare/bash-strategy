@@ -3,7 +3,7 @@
 # "$1" is a pair "$x,$y" of the tile coordinates.
 # "$2", if NOT "", shows that "drawfield.sh default" must NOT be called.
 
-if [[ -z "$1" || ! -z "$3" ]]; then
+if [[ -z "$1" || "$3" ]]; then
 	echo "tile_explode(): wrong number of arguments."
 	echo "Usage: <int:tilex>,<int:tiley> [<string:not_null_if_must_deny_call_drawfield>]."
 	source shutdown.sh error
