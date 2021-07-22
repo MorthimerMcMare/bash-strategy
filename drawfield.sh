@@ -14,10 +14,9 @@ fi
 # Only updating field layer cache:
 if [[ "$1" == "updatecache" || ( -z ${CACHEFIELD[exists]+x} ) ]]; then
 	COORDS="$2"
-	CONTINUE=0
 
 	# Force full update if there's no field cache:
-	[ -z ${CACHEFIELD[exists]+x} ] && declare -g -A CACHEFIELD=( [exists]="yes" ) && COORDS="" && CONTINUE=1
+	[ -z ${CACHEFIELD[exists]+x} ] && declare -g -A CACHEFIELD=( [exists]="yes" ) && COORDS=""
 
 	# Full update if no coordinate presented:
 	if [[ -z "$COORDS" ]]; then
@@ -31,13 +30,13 @@ if [[ "$1" == "updatecache" || ( -z ${CACHEFIELD[exists]+x} ) ]]; then
 	fi
 
 	# Return without drawing.
-	(( $CONTINUE == 0 )) && return
+	return
 fi
 
 
 echo -ne "\e[?25l" # Hides cursor.
 
-if [[ -z "$2" ]]; then
+if [ -z "$2" ]; then
 	# Full map drawing.
 
 	# Field layer:

@@ -96,14 +96,15 @@ attackkey() {
 	fi
 }
 
-capturebasekey() {
+capturebasekey() { # And also in-base cancel.
 	if [[ "$CURMODE" == "move" || "$CURMODE" == "cursor" ]]; then
 		source obj_capturebase.sh "$CURY,$CURX"
 
 		[[ "$?" == 0 ]] && CURMODE="cursor"
+	elif [ "$CURMODE" == "inbase" ]; then
+		CURMODE="cursor"
 	fi
 }
-
 
 
 endturnkey() {
@@ -119,6 +120,9 @@ endturnkey() {
 
 	if [ "$ENDTURNKEYPR" == "y" ]; then
 		local ENDGAMEMASK=0
+
+		# For WIP players wealth increases by constant.
+		PLAYERS[$TURN:money]=$(( ${PLAYERS[$TURN:money]} + 15 * ${PLAYERBASES[$TURN:count]} ))
 
 		for curObjPos in "${!OBJECTS[@]}"; do
 			CUROBJTEAM=$(. obj_getattr.sh "$curObjPos" "team")
@@ -141,7 +145,7 @@ endturnkey() {
 				# If player lives and if it now has no objects and if it has no bases:
 				if [[ -z "${PLAYERS[$i_end:dead]}" && $(( $ENDGAMEMASK & ( 2 ** ($i_end - 1) ) )) && ${PLAYERBASES[$i_end:count]} -eq 0 ]]; then
 					PLAYERS[$i_end:dead]=1
-					echo -e "\e[?25h\e[$(($ROWS - 4));1H\e[${PLAYERS[$i_end]}mPlayer $((i_end + 1))\e[0m had been eliminated."
+					echo -e "\e[?25h\e[$(($ROWS - 4));1H\e[${PLAYERS[$i_end]}mPlayer $i_end\e[0m had been eliminated."
 					echo -n "Press any key to continue... "
 					read -n1 -s
 					echo -ne "\e[?25l\e[$(($ROWS - 4));1H                             \n                             "
@@ -173,7 +177,7 @@ endturnkey() {
 		done
 
 		INFOBARCACHEPREVPOS=""
-		source drawui.sh "turn"
+		source drawui.sh "turn" "money"
 	fi
 }
 
@@ -182,6 +186,7 @@ quickjumpkey() {
 	# "$2" is a "+" or "-".
 
 	if [[ "$CURMODE" == "cursor" ]]; then
+	
 		if [[ "$1" == "base" && ${PLAYERBASES[$TURN:count]} -gt 0 ]]; then
 			# Cycle current base index:
 			PLAYERS[$TURN:curbase]=$(( ${PLAYERS[$TURN:curbase]} "$2" 1 ))
@@ -195,6 +200,8 @@ quickjumpkey() {
 
 		elif [ "$1" == "object" ]; then
 			command
+		else
+			echo "quickjumpkey(): warning: unknown target \"$1\"."
 		fi
 
 	fi
@@ -223,13 +230,13 @@ ForWIP_showKeycode() {
 
 echo -ne "\e[?25h"
 
+# It more or less helps with the repeatable keypress echo:
+source input_util.sh "stopecho"
+
 read -n1 -s KEYPR
 KEYPR=$(echo "$KEYPR" | cat -vT)
 
 echo -ne "\e[?25l"
-
-# It more or less helps with the repeatable keypress echo:
-source input_util.sh "stopecho"
 
 case $KEYPR in
 # Not extended keys:
@@ -247,7 +254,7 @@ case $KEYPR in
 "E"|">"|"-") quickjumpkey "base" "+" ;;
 
 "^L"|"^R")
-	source drawui.sh "updatepositions" "updatescreen" "field" "unitspanel"
+	source drawui.sh "updatepositions" "updatescreen" "field" "unitspanel" "turn"
 ;;
 "h")
 	showaltfieldkey "objectshp"
@@ -280,7 +287,7 @@ case $KEYPR in
 		"[15;2~") # Shift-F5 (show map layer)
 			showaltfieldkey "noobjects" ;;
 
-		*) # I also use that file for recognize extended keyboard codes, why not?
+		*) # I also use this file for recognize extended keyboard codes, why not?
 			[ -z ${GAME_BASH_STRATEGY+x} ] && ForWIP_showKeycode "$ESCSEQ" "esc"
 		;; # of *)
 	esac

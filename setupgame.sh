@@ -84,9 +84,12 @@ setupObjectClasses() {
 
 			# Write team info:
 			[ "$CURCLASS" ] && CLASSTEAMS[$CURCLASS]=$(echo "${LINE#*:}" | tr " " "\t")
+
+			CLASSES+=("$CURCLASS")
 			#echo "$CURCLASS: ${CLASSTEAMS[$CURCLASS]}"
 		else
 			CLASSPROPS[$CURCLASS:symb]="$(echo "$LINE" | cut -d" " $CLASS_SYMBOL)"
+			CLASSPROPS[$CURCLASS:symb]="${CLASSPROPS[$CURCLASS:symb]:0:1}"
 			CLASSPROPS[$CURCLASS:maxhp]="$(echo "$LINE" | cut -d" " $CLASS_MAXHP)"
 			CLASSPROPS[$CURCLASS:atk]="$(echo "$LINE" | cut -d" " $CLASS_ATK)"
 			CLASSPROPS[$CURCLASS:batk]="$(echo "$LINE" | cut -d" " $CLASS_BATK)"
@@ -95,7 +98,7 @@ setupObjectClasses() {
 
 			# Class attributes are also separated by space, so with current 
 			#file structure variant I cannot use here bash substrings.
-			CLASSATTRS[$CURCLASS]="$(echo "$LINE" | cut $CLASS_ATTR)"
+			CLASSATTRS[$CURCLASS]="$(echo "$LINE" | cut -d" " $CLASS_ATTR)"
 
 			#echo "$CURCLASS: ${CLASSPROPS[$CURCLASS:atk]}"
 			CURCLASS=""
@@ -200,6 +203,9 @@ setupField() {
 }
 
 
+# Clear all previous potencially set variables:
+source clearvariables.sh
+
 # "Utils" (for the "cut" command):
 readonly CLASS_SYMBOL="-f1"
 readonly CLASS_MAXHP="-f2"
@@ -215,7 +221,7 @@ SCREENMINX=15
 SCREENMINY=3
 
 ROWS=$(stty size | cut -d" " -f1)
-
+COLUMNS=$(stty size | cut -d" " -f2)
 
 # Current cursor x and y:
 CURX=0
@@ -226,14 +232,11 @@ PREVMODE=""
 
 TURN=1
 
-# Clear all previous potencially set variables:
-source clearvariables.sh
-
 # Field variables ([x/y] map layer and quick aliases):
 declare -g -A FIELD && declare -g -A FIELDALIASES
 
 # Class "static constants":
-declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
+declare -a -g CLASSES && declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
 
 # Object variables ([x/y] classes, [x/y] their HP and [x/y] their colors):
 #"$OBJECTSMOVE" is a free turns left for the object.
@@ -253,9 +256,16 @@ declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE &&
 #"1", "31" and "91" are same).
 declare MAXPLAYERS=1 && declare -g -A PLAYERS && declare -g -A PLAYERBASES && declare -a PLAYERTEAMS
 
+# For UI (units panel):
+declare -a -g PLAYERPANELLINESOFS && declare -a -g PLAYERMONEYPANELOFS
+
 
 setupField "$1"
 setupObjectClasses "$2"
+
+
+echo "setupField(): call to drawfield(): updating field cache..."
+source drawfield.sh "updatecache"
 
 
 source obj_create.sh "Light tank" "1" "2,2"

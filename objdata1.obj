@@ -4,18 +4,20 @@
 
 Trike: 1 2
 t 2 1 1 10 3
-Light tank: 1 2
-T 5 3 1 40 2
 
 Marauder: 1
 M 3 2 1 30 3
+BTR: 2
+b 4 2 1 35 2
+
+Light tank: 1 2
+T 5 3 1 40 2
+
 SAU: 1
 S 3 6 2 80 1 atkRange:2
 Amphybia: 1
 W 5 2 1 70 2 passattr:attr_amphybia
 
-BTR: 2
-b 4 2 1 35 2
 Heavy tank: 2
 H 8 4 2 70 2
 Rocket launcher: 2

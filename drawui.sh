@@ -1,9 +1,5 @@
 #!/bin/bash
 
-drawunitspanel() {
-	echo -n ""
-}
-
 clearinfobar() {
 	# With subtly clearing previous output:
 	if [ "$1" != "2" ]; then
@@ -30,19 +26,77 @@ framecaptions() {
 drawinfobar() {
 	[ "$2" == "2" ] && OFS=$INFOBARLOCKY || OFS=$INFOBARY
 
-	#if [ "$INFOBARCACHEPREVPOS" != "$1" ]; then
-	STR1="${OBJECTS[$1]}\e[0m: hp ${OBJECTSHP[$1]}/$(. obj_getattr.sh $1 maxhp), "
+	STR1="${OBJECTS[$1]:0:20}\e[0m: hp ${OBJECTSHP[$1]}/$(. obj_getattr.sh $1 maxhp), "
 	STR1=$STR1"atk $(. obj_getattr.sh $1 attack)($(. obj_getattr.sh $1 backfire))"
 	STR2="Moves: ${OBJECTSMOVE[$1]}/$(. obj_getattr.sh $1 range)"
 
-		#INFOBARCACHEPREVPOS="$1"
-		#INFOBARCACHEPREVSTR1="$STR1"
-		#INFOBARCACHEPREVSTR2="$STR2"
-	#fi
-
-	echo -ne "\e[$OFS;${INFOBARX}H\e[${OBJECTSCOLOR[$1]}m$STR1                \
-\e[$(( $OFS + 1 ));${INFOBARX}H$STR2                "
+	echo -ne "\e[$OFS;${INFOBARX}H\e[${OBJECTSCOLOR[$1]}m$STR1 \
+\e[$(( $OFS + 1 ));${INFOBARX}H$STR2 "
 }
+
+drawmoneybar() {
+	echo -ne "\e[${PLAYERMONEYPANELOFS[$1]}H\e[90m(\e[0m${PLAYERS[$1:money]}\e[90m\$)"
+}
+
+drawunitspanel() {
+	CURPANELLINE=0
+
+	alignright() {
+		ALIGNTEMPSTR="${CLASSPROPS[$NAME:$1]}"
+		echo "\e[$(($2 - ${#ALIGNTEMPSTR}))C$ALIGNTEMPSTR"
+	}
+
+	nextline() {
+		echo -e "\e[${UNITSPANELX}G$1"
+		CURPANELLINE=$(( $CURPANELLINE + 1 ))
+	}
+
+	for (( i_upan = 1; i_upan < $MAXPLAYERS; i_upan++ )); do
+		# Go to start position:
+		echo -ne "\e[$(( $UNITSPANELY + $CURPANELLINE ));${UNITSPANELX}H"
+
+		# Print player name:
+		CURPLAYERNAME="Player $i_upan"
+		nextline "\e[90m| \e[${PLAYERS[$i_upan]}m$CURPLAYERNAME\e[90m  "
+
+		# Set up a money bar position:
+		PLAYERMONEYPANELOFS[$i_upan]="$(( $UNITSPANELY + $CURPANELLINE - 1 ));$(( ${#CURPLAYERNAME} + $UNITSPANELX + 4 ))"
+		#echo "[[$i_upan: ${PLAYERMONEYPANELOFS[$i_upan]}]]"
+
+		# Print expanded divisioner in non-compact mode (see "updatepositions"):
+		DIVISIONERSTR="\e[1D=^=v================Cost==HP/ATK(bk)/Ran"
+		(( $COMPACTSCREEN == 0 )) && DIVISIONERSTR="${DIVISIONERSTR}/Special====="
+		nextline $DIVISIONERSTR
+
+		# Set up start position for future units choice action:
+		PLAYERPANELLINESOFS[$i_upan]=$CURPANELLINE
+
+		# Print out units and their characteristics for all players:
+		for (( i_unit=0; i_unit < ${#CLASSES[*]}; i_unit++ )); do
+			if [[ "${CLASSTEAMS[${CLASSES[$i_unit]}]}" == *"$i_upan"* ]]; then
+				# Truncate name to 15 characters:
+				NAME=${CLASSES[$i_unit]:0:15}
+
+				SYMBSTR="\e[0m${CLASSPROPS[$NAME:symb]:0:1}"
+				NAMESTR="\e[0m$NAME\e[$((16 - ${#NAME}))C"
+				# It's better not to set costs > 999$. At least at the moment.
+				COSTSTR="\e[1D$(alignright "cost" "4")\$"
+				HPSTR="\e[97m$(alignright "maxhp" "3")\e[90m/"
+				ATKSTR="\e[37m$(alignright "atk" "1")\e[90m("
+				BATKSTR="\e[90m$(alignright "batk" "2")\e[90m)/"
+				RANGESTR="\e[37m$(alignright "range" "3")\e[90m"
+
+				(( $COMPACTSCREEN == 0 )) && RANGESTR="$RANGESTR/ ${CLASSATTRS[$NAME]}"
+				nextline "$SYMBSTR \e[90m|$NAMESTR$COSTSTR $HPSTR $ATKSTR$BATKSTR$RANGESTR"
+			fi
+		done
+
+		drawmoneybar "$i_upan"
+
+		nextline ""
+	done
+}
+
 
 : 'drawturnbar() {
 	TURNBARX=0
@@ -72,20 +126,52 @@ if [ "$1" ]; then
 				drawunitspanel
 				;;
 			"updatepositions") # Updates draw positions.
-				INFOBARX=15
-				INFOBARCAPTIONXOFS=$(( $INFOBARX - 3 ))
-				INFOBARY=$(( $SCREENMINY + $FIELDMAXY + 2 ))
-				INFOBARLOCKY=$(( INFOBARY + 3 ))
+				# (I'll pick up the values later).
+				ROWS=$(stty size | cut -d" " -f1)
+				COLUMNS=$(stty size | cut -d" " -f2)
+
+				UNITSPANELX=50
+				if (( $UNITSPANELX + 60 < $COLUMNS )); then
+					COMPACTSCREEN=0
+					SCREENMINX=15
+
+					INFOBARX=15
+					INFOBARCAPTIONXOFS=$(( $INFOBARX - 3 ))
+					INFOBARY=$(( $SCREENMINY + $FIELDMAXY + 2 ))
+					INFOBARLOCKY=$(( INFOBARY + 3 ))
+
+					UNITSPANELY=2
+				else
+					if (( $ROWS < 24 || $COLUMNS < 80 )); then
+						echo -e "\e[?25h\e[$(($ROWS - 4));1H\e[1;93mdrawui(): warning: terminal size may be too small."
+						echo -n "Press any key to continue... "
+						read -n1 -s
+						echo -ne "\e[?25l\e[$(($ROWS - 4));1H                             \n                             \e[0m"
+					fi
+					COMPACTSCREEN=1
+					UNITSPANELX=$(( $COLUMNS / 2 - 10 ))
+					UNITSPANELY=2
+
+					SCREENMINX=$(( UNITSPANELX / 2 - $FIELDMAXX / 2 ))
+
+					INFOBARX=13
+					INFOBARCAPTIONXOFS=$(( $INFOBARX - 3 ))
+					INFOBARY=$(( $ROWS - 7 ))
+					INFOBARLOCKY=$(( INFOBARY + 3 ))
+				fi
+
 				;;
 			"turn")
-				#drawturnbar &
-				echo -ne "\e[1;$(( $SCREENMINX + $FIELDMAXX / 2 - 6 ))H\e[${PLAYERS[$TURN]}mPlayer $TURN\e[0m turn"
+				echo -ne "\e[1;$(( $SCREENMINX + $FIELDMAXX / 2 - 6 ))H\e[${PLAYERS[$TURN]}mPlayer $TURN\e[0m turn:"
+				;;
+			"money") # Also draws in "drawunitspanel()".
+				for (( i_players = 1; i_players < $MAXPLAYERS; i_players++ )); do				
+					drawmoneybar "$i_players"
+				done
 				;;
 			"updatescreen")
 				PREVMODE="clrscr();"
 				clear
-				# To rewriting (copied from "turn" case):
-				echo -ne "\e[1;$(( $SCREENMINX + $FIELDMAXX / 2 - 6 ))H\e[${PLAYERS[$TURN]}mPlayer $TURN\e[0m turn"
 				;;
 			"defaultui")
 				source drawui.sh ""
@@ -108,7 +194,7 @@ else
 		esac
 		case $CURMODE in
 			"cursor") framecaptions "Cursor" "" ;;
-			"move") framecaptions "" "Current"; drawinfobar "$CURY,$CURX" "2" ;;
+			"move") framecaptions "" "Current" ;;
 			"target") framecaptions "Target" "Attacker"; drawinfobar "$TARGETERPOS" "2" ;;
 			"inbase") framecaptions "" "" ;;
 		esac
