@@ -33,7 +33,7 @@ cleartargetmode() {
 		#(If serious, it needed to force update cached string with old wrong 
 		#target's HP. Maybe it's better to create separated force-mode variable,
 		#or write a simple cache manager for each future memory case?):
-		INFOBARCACHEPREVPOS=""
+		#INFOBARCACHEPREVPOS=""
 	fi
 
 	unset TARGETERTEAM

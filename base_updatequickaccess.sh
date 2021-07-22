@@ -15,10 +15,11 @@ fi
 
 if [[ "${FIELD[$1]}" == *"Base"* && $2 -lt $MAXPLAYERS ]]; then
 	# Remove this base from any other player:
-	for (( i_bupd = 0; i_bupd < $MAXPLAYERS; i_bupd++ )); do
-		if [ "${PLAYERBASES[$i_bupd:$1]}" ]; then
-			PLAYERBASES[$i_bupd:count]=$(( ${PLAYERBASES[$i_bupd:count]} - 1 ))
-			unset PLAYERBASES[$i_bupd:$1]
+	for i_bupd in ${!PLAYERBASES[*]}; do
+		if [[ "$i_bupd" != *"count"* && "${PLAYERBASES[$i_bupd]}" == "$1" ]]; then
+			CURPLAYER=${i_bupd%:*}
+			PLAYERBASES[$CURPLAYER:count]=$(( ${PLAYERBASES[$CURPLAYER:count]} - 1 ))
+			unset PLAYERBASES[$i_bupd]
 		fi
 	done
 

@@ -35,7 +35,7 @@ case "$2" in
 		echo "${CLASSPROPS[${OBJECTS[$1]}:batk]}"
 		;;
 	"team")
-		echo "$(( "${OBJECTSCOLOR[$1]}" % 10 ))"
+		echo "${PLAYERTEAMS[${OBJECTSCOLOR[$1]}]}"
 		;;
 	"possibleteams"|"teams")
 		echo "${CLASSTEAMS[${OBJECTS[$1]}]}"

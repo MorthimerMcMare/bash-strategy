@@ -72,9 +72,9 @@ moveobjkey() {
 actionkey() {
 	case $CURMODE in
 		"cursor")
-			if [[ "${OBJECTS[$CURY,$CURX]}" ]]; then
+			if [[ "${OBJECTS[$CURY,$CURX]}" && "${PLAYERTEAMS[${OBJECTSCOLOR[$CURY,$CURX]}]}" == $TURN ]]; then
 				CURMODE="move"
-			elif [[ "${FIELD[$CURY,$CURX]}" == "PlayerBase"* ]]; then
+			elif [ "${FIELD[$CURY,$CURX]}" == "PlayerBase$TURN" ]; then
 				CURMODE="inbase"
 			fi ;;
 		"move")
@@ -88,7 +88,7 @@ actionkey() {
 }
 
 attackkey() {
-	if [[ "$CURMODE" == "move" || "$CURMODE" == "cursor" ]]; then
+	if [[ ( "$CURMODE" == "move" || "$CURMODE" == "cursor" ) && "${PLAYERTEAMS[${OBJECTSCOLOR[$CURY,$CURX]}]}" == $TURN ]]; then
 		source input_targetmode.sh "prepare" "$CURY,$CURX"
 	elif [[ "$CURMODE" == "target" ]]; then
 		source input_targetmode.sh "tryattack" "$CURY,$CURX"
@@ -104,6 +104,78 @@ capturebasekey() {
 	fi
 }
 
+
+
+endturnkey() {
+	echo -ne "\e[?25h\e[$(($ROWS - 3));1HDo you want to end the turn? [Y/N]"
+
+	local ENDTURNKEYPR=""
+	while [[ "$ENDTURNKEYPR" != "n" && "$ENDTURNKEYPR" != "y" ]]; do
+		read -n1 -s ENDTURNKEYPR
+		declare -l ENDTURNKEYPR="$ENDTURNKEYPR"
+	done
+
+	echo -ne "\e[$(($ROWS - 3));1H                                  \e[?25l"
+
+	if [ "$ENDTURNKEYPR" == "y" ]; then
+		local ENDGAMEMASK=0
+
+		for curObjPos in "${!OBJECTS[@]}"; do
+			CUROBJTEAM=$(. obj_getattr.sh "$curObjPos" "team")
+			ENDGAMEMASK=$(( $ENDGAMEMASK | ( 2 ** ( $CUROBJTEAM - 1 ) ) ))
+
+			#echo "$curObjPos: \"$(. obj_getattr.sh "$curObjPos" "team")\" with turn \"$TURN\""
+
+			if [[ $CUROBJTEAM -eq $TURN ]]; then
+				OBJECTSMOVE[$curObjPos]=$(. obj_getattr.sh "$curObjPos" "range")
+			fi
+		done
+
+		# If not all players have objects, then check their bases:
+		if (( $ENDGAMEMASK != ( 2 ** ( $MAXPLAYERS - 1 ) - 1 ) )); then
+			PLAYERSLEFT=0
+			LASTLIVEPLAYER=0
+
+			for (( i_end = 1; i_end < $MAXPLAYERS; i_end++ )); do
+
+				# If player lives and if it now has no objects and if it has no bases:
+				if [[ -z "${PLAYERS[$i_end:dead]}" && $(( $ENDGAMEMASK & ( 2 ** ($i_end - 1) ) )) && ${PLAYERBASES[$i_end:count]} -eq 0 ]]; then
+					PLAYERS[$i_end:dead]=1
+					echo -e "\e[?25h\e[$(($ROWS - 4));1H\e[${PLAYERS[$i_end]}mPlayer $((i_end + 1))\e[0m had been eliminated."
+					echo -n "Press any key to continue... "
+					read -n1 -s
+					echo -ne "\e[?25l\e[$(($ROWS - 4));1H                             \n                             "
+				else
+					#echo "\"${PLAYERS[$i_end:dead]}\", $(( $ENDGAMEMASK & ( 2 ** ($i_end - 1) ) )), cnt:${PLAYERBASES[$i_end:count]}"
+					LASTLIVEPLAYER=$i_end
+					PLAYERSLEFT=$(( $PLAYERSLEFT + 1 ))
+				fi
+			done
+
+			if [ $PLAYERSLEFT -eq 1 ]; then
+				echo -e "\e[?25h\e[$(($ROWS - 3));1H\e[${PLAYERS[$LASTLIVEPLAYER]}mPlayer $LASTLIVEPLAYER\e[0m wins!"
+				GAME_BASH_STRATEGY="exit"
+			elif [ $PLAYERSLEFT -eq 0 ]; then
+				echo "Draw."
+				GAME_BASH_STRATEGY="exit"
+			fi
+		fi
+
+		PREVTURN=$TURN
+		TURN=$(( $TURN + 1 ))
+		# Players counts from 1 to 6:
+		[ $TURN -ge $MAXPLAYERS ] && TURN=1
+		while [ ${PLAYERS[$TURN:dead]} ]; do
+			TURN=$(( $TURN + 1 ))
+			[ $TURN -ge $MAXPLAYERS ] && TURN=1
+
+			[ $TURN == $PREVTURN ] && break
+		done
+
+		INFOBARCACHEPREVPOS=""
+		source drawui.sh "turn"
+	fi
+}
 
 quickjumpkey() {
 	# "$1" is a "base" or "object";
@@ -148,6 +220,7 @@ ForWIP_showKeycode() {
 }
 
 
+
 echo -ne "\e[?25h"
 
 read -n1 -s KEYPR
@@ -167,6 +240,8 @@ case $KEYPR in
 "1"|"f"|"t") attackkey ;;
 "") actionkey ;; # Space, enter and tab won't write with "cat -vT"...
 "c"|"/"|"\\"|"0") capturebasekey ;;
+
+"X"|'"') endturnkey ;;
 
 "Q"|"<"|"+") quickjumpkey "base" "-" ;;
 "E"|">"|"-") quickjumpkey "base" "+" ;;

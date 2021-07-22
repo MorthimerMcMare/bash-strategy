@@ -25,7 +25,7 @@ if [[ ! ( -z ${OBJECTS[$1]} || -z ${OBJECTS[$2]} ) && (( ${OBJECTSMOVE[$1]} > 0 
 	XYDELTA=1
 
 
-	#OBJECTSMOVE[$1]=$(( ${OBJECTSMOVE[$1]} - 1 ))
+	OBJECTSMOVE[$1]=$(( ${OBJECTSMOVE[$1]} - 1 ))
 
 	# Check for attack range modifiers:
 	if [[ $OBJ1ATTR == *"atkRange:"* ]]; then

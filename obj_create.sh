@@ -21,9 +21,12 @@ CELLX=${2#*,}
 if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $CELlX < $FIELDMAXX && $CELLY < $FIELDMAXY ]]; then
 	OBJECTS[$3]="$1"
 	OBJECTSHP[$3]=$(. obj_getattr.sh "$3" "maxhp")
-	OBJECTSMOVE[$3]=$(. obj_getattr.sh "$3" "range")
-	OBJECTSCOLOR[$3]=$(( $2 + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
+	#OBJECTSMOVE[$3]=$(. obj_getattr.sh "$3" "range")
+	OBJECTSMOVE[$3]=0
+	PLAYERCOLOR=$(( ${PLAYERS[$2]} % 10 + 30 ))
+	OBJECTSCOLOR[$3]=$(( $PLAYERCOLOR + 60 * ( $(echo $RANDOM) % 2 ) ))
 
-	# There's cannot be reality where single object draws before field. Theoretically...
-	#source drawfield.sh "default" "$3"
+	# There's cannot be reality where single object draws before field. 
+	#Theoretically...
+	source drawfield.sh "default" "$3"
 fi

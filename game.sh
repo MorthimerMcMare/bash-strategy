@@ -6,7 +6,7 @@ GAME_BASH_STRATEGY="$date"
 # Level, tileset (as a part of the map file) and objects loading:
 source setupgame.sh "test.map" "objdata1.obj"
 
-source drawui.sh "updatepositions" "field" "unitspanel"
+source drawui.sh "updatepositions" "updatescreen" "field" "unitspanel" "turn" "defaultui"
 
 while [[ $GAME_BASH_STRATEGY != "exit" ]]; do
 	source input.sh

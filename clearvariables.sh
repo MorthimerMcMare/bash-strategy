@@ -1,5 +1,6 @@
 #!/bin/bash
 
+unset PLAYERTEAMS
 unset PLAYERBASES
 unset PLAYERS
 unset MAXPLAYERS

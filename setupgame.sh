@@ -137,18 +137,22 @@ setupField() {
 				if [[ "$CURPLAYER" < "1" || "$CURPLAYER" > "6" ]]; then
 					CURPLAYER=$(( $(echo $RANDOM) % 7 + 1 ))
 				fi
+
 				# Randomly changes the player color intensity:
 				#CURPLAYER=$(( $CURPLAYER + $(echo $RANDOM) % 2 * 60 ))
-				PLAYERS[$CURPLAYER]="$CURPLAYER"
+				CURPLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
+				PLAYERTEAMS[$(( $CURPLAYERCOLOR % 10 ))]=$CURPLAYER
+				PLAYERTEAMS[$(( $CURPLAYERCOLOR % 10 + 30 ))]=$CURPLAYER
+				PLAYERTEAMS[$(( $CURPLAYERCOLOR % 10 + 90 ))]=$CURPLAYER
+
+				PLAYERS[$CURPLAYER]="$CURPLAYERCOLOR"
 				PLAYERS[$CURPLAYER:money]=${LINE#* }
 				PLAYERS[${FILEDALIAS: -1}:curbase]=0
-
-				CURPLAYERCOLOR=$(( $CURPLAYER + 30 + 60 * ( $(echo $RANDOM) % 2 ) ))
 
 				TILES[PlayerBase$CURPLAYER]="\\e[${CURPLAYERCOLOR}m${TILES[PlayerBase]}\\e[0m"
 				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
 				FIELDALIASES[$CURPLAYER]="PlayerBase$CURPLAYER"
-				
+
 				MAXPLAYERS=$(( $MAXPLAYERS + 1 ))
 
 				echo "setupField(): player $CURPLAYER added."
@@ -238,27 +242,29 @@ declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE &&
 
 # Players info:
 # MAXPLAYERS is an amount of players.
-# PLAYERS[X] is a "X".
+# PLAYERS[X] is a X's player bases color (from 1 to 6, see escape sequences).
 # PLAYERS[X:money] is a X'th player current wealth.
+# PLAYERS[X:dead] is a X'th player live state (set to non-empty if player died).
 # PLAYERBASES[X:Y] is an array[0..Y] of the "$x,$y" pairs of X's bases.
 # PLAYERBASES[X:count] is a maximal index of the X's bases.
 # PLAYERS[X:curbase] is an index in the $PLAYERBASES array.
-declare MAXPLAYERS=1 && declare -g -A PLAYERS && declare -g -A PLAYERBASES
+# PLAYERTEAMS[X]=Y means that team number Y has X color (information opposite 
+#to "${PLAYERS[X]}", and no matter what case of inscription you will use, e. g. 
+#"1", "31" and "91" are same).
+declare MAXPLAYERS=1 && declare -g -A PLAYERS && declare -g -A PLAYERBASES && declare -a PLAYERTEAMS
 
 
 setupField "$1"
 setupObjectClasses "$2"
 
-clear
-
 
 source obj_create.sh "Light tank" "1" "2,2"
 source obj_create.sh "Trike" "1" "2,4"
-source obj_create.sh "Amphybia" "1" "3,3"
+#source obj_create.sh "Amphybia" "1" "3,3"
 source obj_create.sh "Light tank" "1" "4,7"
 
-source obj_create.sh "Rocket launcher" "2" "5,4"
-source obj_create.sh "Heavy tank" "2" "3,7"
+#source obj_create.sh "Rocket launcher" "2" "5,4"
+#source obj_create.sh "Heavy tank" "2" "3,7"
 source obj_create.sh "BTR" "2" "4,1"
 
 #source drawfield.sh "(from setupgame.sh)"
