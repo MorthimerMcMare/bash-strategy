@@ -7,7 +7,11 @@ case $1 in
 	"startecho"|"echo on")
 		stty echo icanon
 		;;
+	"storeterminal") # Save STDIO descriptor:
+		exec 3<&0
+		;;
 	"restoreterminal")
+		exec 0<&3
 		echo -ne "\e[?25h"
 		stty sane
 		;;

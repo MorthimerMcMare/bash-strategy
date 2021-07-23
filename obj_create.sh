@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # "$1" is a name from objects data file, spaces are permitted.
-# "$2" is a belonging to a particular team (1..6).
+# "$2" is a belonging to a particular player (1..6).
 # "$3" must be a "$x,$y" pair.
 
 if [[ -z "$3" || "$4" ]]; then
@@ -15,10 +15,11 @@ fi
 
 CELLY=${2%,*}
 CELLX=${2#*,}
-# Is spawnee object belongs to the team specified in the second argument:
-[[ $(echo "${CLASSTEAMS[$1]}" | grep -c "$2") == "1" ]] && TEAMSEXPRESSION=1 || TEAMSEXPRESSION=0
 
-if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $CELlX < $FIELDMAXX && $CELLY < $FIELDMAXY ]]; then
+# Is spawnee object belongs to the team specified in the second argument:
+[[ "${TEAMCLASSES[$2]}" == *"$1"* ]] && TEAMSEXPRESSION=1 || TEAMSEXPRESSION=0
+
+if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $CELLX -lt $FIELDMAXX && $CELLY -lt $FIELDMAXY ]]; then
 	OBJECTS[$3]="$1"
 	OBJECTSHP[$3]=$(. obj_getattr.sh "$3" "maxhp")
 	#OBJECTSMOVE[$3]=$(. obj_getattr.sh "$3" "range")

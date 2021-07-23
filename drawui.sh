@@ -42,26 +42,26 @@ drawunitspanel() {
 	CURPANELLINE=0
 
 	alignright() {
-		ALIGNTEMPSTR="${CLASSPROPS[$NAME:$1]}"
+		ALIGNTEMPSTR="${CLASSPROPS[$REALNAME:$1]}"
 		echo "\e[$(($2 - ${#ALIGNTEMPSTR}))C$ALIGNTEMPSTR"
 	}
 
 	nextline() {
 		echo -e "\e[${UNITSPANELX}G$1"
-		CURPANELLINE=$(( $CURPANELLINE + 1 ))
+		: $(( CURPANELLINE++ ))
 	}
 
-	for (( i_upan = 1; i_upan < $MAXPLAYERS; i_upan++ )); do
+	for (( i_upl = 1; i_upl < $MAXPLAYERS; i_upl++ )); do
 		# Go to start position:
 		echo -ne "\e[$(( $UNITSPANELY + $CURPANELLINE ));${UNITSPANELX}H"
 
 		# Print player name:
-		CURPLAYERNAME="Player $i_upan"
-		nextline "\e[90m| \e[${PLAYERS[$i_upan]}m$CURPLAYERNAME\e[90m  "
+		CURPLAYERNAME="Player $i_upl"
+		nextline "\e[90m| \e[${PLAYERS[$i_upl]}m$CURPLAYERNAME\e[90m  "
 
 		# Set up a money bar position:
-		PLAYERMONEYPANELOFS[$i_upan]="$(( $UNITSPANELY + $CURPANELLINE - 1 ));$(( ${#CURPLAYERNAME} + $UNITSPANELX + 4 ))"
-		#echo "[[$i_upan: ${PLAYERMONEYPANELOFS[$i_upan]}]]"
+		PLAYERMONEYPANELOFS[$i_upl]="$(( $UNITSPANELY + $CURPANELLINE - 1 ));$(( ${#CURPLAYERNAME} + $UNITSPANELX + 4 ))"
+		#echo "[[$i_upl: ${PLAYERMONEYPANELOFS[$i_upl]}]]"
 
 		# Print expanded divisioner in non-compact mode (see "updatepositions"):
 		DIVISIONERSTR="\e[1D=^=v================Cost==HP/ATK(bk)/Ran"
@@ -69,34 +69,46 @@ drawunitspanel() {
 		nextline $DIVISIONERSTR
 
 		# Set up start position for future units choice action:
-		PLAYERPANELLINESOFS[$i_upan]=$CURPANELLINE
+		PLAYERPANELLINESOFS[$i_upl]=$CURPANELLINE
 
+		#"${TEAMCLASSES[$PLAYERNUM]}" == *"$OBJNAME"*
 		# Print out units and their characteristics for all players:
-		for (( i_unit=0; i_unit < ${#CLASSES[*]}; i_unit++ )); do
-			if [[ "${CLASSTEAMS[${CLASSES[$i_unit]}]}" == *"$i_upan"* ]]; then
-				# Truncate name to 15 characters:
-				NAME=${CLASSES[$i_unit]:0:15}
+		TEMPLINE="${TEAMCLASSES[$i_upl]}	"
 
-				SYMBSTR="\e[0m${CLASSPROPS[$NAME:symb]:0:1}"
-				NAMESTR="\e[0m$NAME\e[$((16 - ${#NAME}))C"
-				# It's better not to set costs > 999$. At least at the moment.
-				COSTSTR="\e[1D$(alignright "cost" "4")\$"
-				HPSTR="\e[97m$(alignright "maxhp" "3")\e[90m/"
-				ATKSTR="\e[37m$(alignright "atk" "1")\e[90m("
-				BATKSTR="\e[90m$(alignright "batk" "2")\e[90m)/"
-				RANGESTR="\e[37m$(alignright "range" "3")\e[90m"
+		while [ "$TEMPLINE" ]; do
+			REALNAME=${TEMPLINE%%	*}	# Internal used name.
+			REALNAME=${REALNAME##*	}
+			TRUNCNAME=${REALNAME:0:15}	# Name truncate to 15 characters.
+			#printf "%s\n" "\"$NAME\", \"${TEAMCLASSES[$i_upl]}\""
 
-				(( $COMPACTSCREEN == 0 )) && RANGESTR="$RANGESTR/ ${CLASSATTRS[$NAME]}"
-				nextline "$SYMBSTR \e[90m|$NAMESTR$COSTSTR $HPSTR $ATKSTR$BATKSTR$RANGESTR"
-			fi
+			SYMBSTR="\e[0m${CLASSPROPS[$REALNAME:symb]:0:1}"
+			NAMESTR="\e[0m$TRUNCNAME\e[$((16 - ${#REALNAME}))C"
+			# It's better not to set costs > 999$. At least at the moment.
+			COSTSTR="\e[1D$(alignright "cost" "4")\$"
+			HPSTR="\e[97m$(alignright "maxhp" "3")\e[90m/"
+			ATKSTR="\e[37m$(alignright "atk" "1")\e[90m("
+			BATKSTR="\e[90m$(alignright "batk" "2")\e[90m)/"
+			RANGESTR="\e[37m$(alignright "range" "3")\e[90m"
+
+			(( $COMPACTSCREEN == 0 )) && RANGESTR="$RANGESTR/ ${CLASSATTRS[$REALNAME]}"
+			nextline "$SYMBSTR \e[90m|$NAMESTR$COSTSTR $HPSTR $ATKSTR$BATKSTR$RANGESTR"
+
+			TEMPLINE="${TEMPLINE#*	}"
 		done
 
-		drawmoneybar "$i_upan"
+		drawmoneybar "$i_upl"
 
 		nextline ""
 	done
 }
 
+
+clearinbasecursor() {
+	# !!!
+	#for (( ; ; )); do
+		echo -ne "\e[H"
+	#done
+}
 
 : 'drawturnbar() {
 	TURNBARX=0
@@ -191,6 +203,7 @@ else
 			"cursor") clearinfobar "1" ;;
 			"move") [ $CURMODE != "target" ] && clearinfobar "2" ;;
 			"target") [ $CURMODE == "cursor" ] && clearinfobar "2" || clearinfobar "1" ;;
+			"inbase") clearinbasecursor ;;
 		esac
 		case $CURMODE in
 			"cursor") framecaptions "Cursor" "" ;;

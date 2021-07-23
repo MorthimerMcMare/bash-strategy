@@ -3,6 +3,16 @@
 # A variable indicating whether the game is launched:
 GAME_BASH_STRATEGY="$date"
 
+intercept_exit() {
+	source shutdown.sh ""
+}
+trap intercept_exit EXIT
+
+# On initializaton program works with configuration files, so it's needed to 
+#store original STDIN, or else an EXIT signal will produce a fatal error in the 
+#"shutdown.sh" because of "stty" failure:
+source term_util.sh "storeterminal"
+
 # Level, tileset (as a part of the map file) and objects loading:
 source setupgame.sh "test.map" "objdata1.obj"
 
@@ -14,12 +24,8 @@ while [[ $GAME_BASH_STRATEGY != "exit" ]]; do
 
 	PREVMODE=$CURMODE
 
-	source input_util.sh "flush"
-	source input_util.sh "echo on"
+	source term_util.sh "flush"
+	source term_util.sh "echo on"
 done
 
-# Nice exit position:
-echo -e "\e[$(($ROWS - 2));1H"
-
-# Clearing all in-game variables:
-source shutdown.sh
+# Trap "intercept_exit()" will prevent exit without clear.

@@ -38,7 +38,9 @@ case "$2" in
 		echo "${PLAYERTEAMS[${OBJECTSCOLOR[$1]}]}"
 		;;
 	"possibleteams"|"teams")
-		echo "${CLASSTEAMS[${OBJECTS[$1]}]}"
+		for (( i_getattr = 1; i_getattr < $MAXPLAYERS; i_getattr++ )); do
+			[[ "${TEAMCLASSES[$i_getattr]}" == *"${OBJECTS[$1]}"* ]] && echo "$i_getattr" && break
+		done
 		;;
 	"attr"*)
 		echo "${CLASSATTRS[${OBJECTS[$1]}]}"

@@ -79,14 +79,20 @@ setupObjectClasses() {
 
 		if [ -z "$CURCLASS" ]; then
 			CURCLASS=${LINE%:*}
-			#CURCLASS=$(echo "$LINE" | cut -d":" -f1)
-			#"# For the MC colorer.
 
 			# Write team info:
-			[ "$CURCLASS" ] && CLASSTEAMS[$CURCLASS]=$(echo "${LINE#*:}" | tr " " "\t")
+			[ "$CURCLASS" ] && {
+				# Replace all tab occurences to spaces:
+				CURCLASS=${CURCLASS//	/ }
 
-			CLASSES+=("$CURCLASS")
-			#echo "$CURCLASS: ${CLASSTEAMS[$CURCLASS]}"
+				for i_setobj in $(echo "${LINE#*:}"); do
+					# Add "$CURCLASS" if "$TEAMCLASSES[$i]" does not exist and 
+					#"$TEAMCLASSES[$i]\t$CURCLASS" otherwise:
+					TEAMCLASSES[$i_setobj]="${TEAMCLASSES[$i_setobj]-}${TEAMCLASSES[$i_setobj]+	}$CURCLASS"
+				done
+			}
+
+			#echo "$CURCLASS: \"${TEAMCLASSES[1]}\",\"${TEAMCLASSES[2]}\""
 		else
 			CLASSPROPS[$CURCLASS:symb]="$(echo "$LINE" | cut -d" " $CLASS_SYMBOL)"
 			CLASSPROPS[$CURCLASS:symb]="${CLASSPROPS[$CURCLASS:symb]:0:1}"
@@ -156,7 +162,7 @@ setupField() {
 				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
 				FIELDALIASES[$CURPLAYER]="PlayerBase$CURPLAYER"
 
-				MAXPLAYERS=$(( $MAXPLAYERS + 1 ))
+				: $(( MAXPLAYERS++ ))
 
 				echo "setupField(): player $CURPLAYER added."
 				;;
@@ -185,7 +191,7 @@ setupField() {
 					fi
 				done
 
-				FIELDMAXY=$(( $FIELDMAXY + 1 ))
+				: $(( FIELDMAXY++ ))
 				;;
 			*)
 				echo "setupField(): warinig: unknown section name \"$CURMAPSECTION\"."
@@ -236,7 +242,9 @@ TURN=1
 declare -g -A FIELD && declare -g -A FIELDALIASES
 
 # Class "static constants":
-declare -a -g CLASSES && declare -g -A CLASSPROPS && declare -g -A CLASSTEAMS && declare -g -A CLASSATTRS
+# TEAMCLASSES[X] is a X's player available classes (separated by a tab character).
+# Get info from CLASSPROPS[X]: 'cut -f"$CLASS_.\*"' or through "obj_getattr.sh".
+declare -a -g TEAMCLASSES && declare -g -A CLASSPROPS && declare -g -A CLASSATTRS
 
 # Object variables ([x/y] classes, [x/y] their HP and [x/y] their colors):
 #"$OBJECTSMOVE" is a free turns left for the object.

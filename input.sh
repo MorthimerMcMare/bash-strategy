@@ -65,7 +65,8 @@ moveobjkey() {
 	fi
 
 	if [[ $CURMODE == "inbase" ]]; then
-		echo "inbase $2$1"
+		# !!!
+		[ -z "${INBASEX+x}" ] && INBASEX=0
 	fi
 }
 
@@ -75,14 +76,21 @@ actionkey() {
 			if [[ "${OBJECTS[$CURY,$CURX]}" && "${PLAYERTEAMS[${OBJECTSCOLOR[$CURY,$CURX]}]}" == $TURN ]]; then
 				CURMODE="move"
 			elif [ "${FIELD[$CURY,$CURX]}" == "PlayerBase$TURN" ]; then
+				INBASEX=0
 				CURMODE="inbase"
-			fi ;;
+			fi
+			;;
 		"move")
 			CURMODE="cursor" ;;
 		"target")
 			source input_targetmode.sh "cancel" "$CURY,$CURX" ;;
 		"inbase")
-			CURMODE="cursor" ;;
+			# !!!
+			if [ "${PLAYERS[$TURN:money]}" -ge "current object cost" ]; then
+				PLAYERS[$TURN:money]=$(( ${PLAYERS[$TURN:money]} - "current object cost" ))
+				unset INBASEX
+			fi
+			;;
 		*) echo "input(): error: cannot recognize cursor mode \"$CURMODE\"." ;;
 	esac
 }
@@ -103,6 +111,7 @@ capturebasekey() { # And also in-base cancel.
 		[[ "$?" == 0 ]] && CURMODE="cursor"
 	elif [ "$CURMODE" == "inbase" ]; then
 		CURMODE="cursor"
+		unset INBASEX
 	fi
 }
 
@@ -152,7 +161,7 @@ endturnkey() {
 				else
 					#echo "\"${PLAYERS[$i_end:dead]}\", $(( $ENDGAMEMASK & ( 2 ** ($i_end - 1) ) )), cnt:${PLAYERBASES[$i_end:count]}"
 					LASTLIVEPLAYER=$i_end
-					PLAYERSLEFT=$(( $PLAYERSLEFT + 1 ))
+					: $(( PLAYERSLEFT++ ))
 				fi
 			done
 
@@ -166,17 +175,17 @@ endturnkey() {
 		fi
 
 		PREVTURN=$TURN
-		TURN=$(( $TURN + 1 ))
+		: $(( TURN++ ))
 		# Players counts from 1 to 6:
 		[ $TURN -ge $MAXPLAYERS ] && TURN=1
 		while [ ${PLAYERS[$TURN:dead]} ]; do
-			TURN=$(( $TURN + 1 ))
+			: $(( TURN++ ))
 			[ $TURN -ge $MAXPLAYERS ] && TURN=1
 
 			[ $TURN == $PREVTURN ] && break
 		done
 
-		INFOBARCACHEPREVPOS=""
+		#INFOBARCACHEPREVPOS=""
 		source drawui.sh "turn" "money"
 	fi
 }
@@ -186,7 +195,7 @@ quickjumpkey() {
 	# "$2" is a "+" or "-".
 
 	if [[ "$CURMODE" == "cursor" ]]; then
-	
+
 		if [[ "$1" == "base" && ${PLAYERBASES[$TURN:count]} -gt 0 ]]; then
 			# Cycle current base index:
 			PLAYERS[$TURN:curbase]=$(( ${PLAYERS[$TURN:curbase]} "$2" 1 ))
@@ -197,7 +206,6 @@ quickjumpkey() {
 			NEWPOS="${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}"
 			CURY=${NEWPOS%,*}
 			CURX=${NEWPOS#*,}
-
 		elif [ "$1" == "object" ]; then
 			command
 		else
@@ -223,7 +231,7 @@ showaltfieldkey() {
 ForWIP_showKeycode() {
 	[ "$2" != "esc" ] && echo "Other: \"$1\"." || echo "Escape sequence postfix: \"$1\"."
 	echo -ne "\e[?25h"
-	source input_util.sh "startecho"
+	source term_util.sh "startecho"
 }
 
 
@@ -231,7 +239,7 @@ ForWIP_showKeycode() {
 echo -ne "\e[?25h"
 
 # It more or less helps with the repeatable keypress echo:
-source input_util.sh "stopecho"
+source term_util.sh "stopecho"
 
 read -n1 -s KEYPR
 KEYPR=$(echo "$KEYPR" | cat -vT)
