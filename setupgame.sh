@@ -89,6 +89,9 @@ setupObjectClasses() {
 					# Add "$CURCLASS" if "$TEAMCLASSES[$i]" does not exist and 
 					#"$TEAMCLASSES[$i]\t$CURCLASS" otherwise:
 					TEAMCLASSES[$i_setobj]="${TEAMCLASSES[$i_setobj]-}${TEAMCLASSES[$i_setobj]+	}$CURCLASS"
+
+					[ -z "${PLAYERS[$i_setobj:classesamount]}" ] && PLAYERS[$i_setobj:classesamount]=0
+					: $(( PLAYERS[$i_setobj:classesamount]++ ))
 				done
 			}
 
@@ -262,6 +265,7 @@ declare -g -A OBJECTS && declare -g -A OBJECTSHP && declare -g -A OBJECTSMOVE &&
 # PLAYERTEAMS[X]=Y means that team number Y has X color (information opposite 
 #to "${PLAYERS[X]}", and no matter what case of inscription you will use, e. g. 
 #"1", "31" and "91" are same).
+# PLAYERS[X:classesamount] is an amount of the available classes for the player X.
 declare MAXPLAYERS=1 && declare -g -A PLAYERS && declare -g -A PLAYERBASES && declare -a PLAYERTEAMS
 
 # For UI (units panel):
@@ -276,6 +280,7 @@ echo "setupField(): call to drawfield(): updating field cache..."
 source drawfield.sh "updatecache"
 
 
+: '
 source obj_create.sh "Light tank" "1" "2,2"
 source obj_create.sh "Trike" "1" "2,4"
 #source obj_create.sh "Amphybia" "1" "3,3"
@@ -290,7 +295,6 @@ source obj_create.sh "BTR" "2" "4,1"
 # Ten times blows up the second (internally "1"st) column:
 #for (( ix = 0; ix < 10; ix++ )); do for (( jx = 0; jx < 8; jx++ )); do source tile_explode.sh "$jx,1"; done; done
 
-: '
 source obj_move.sh "4,7" "5,7" && sleep 0.4
 source obj_move.sh "2,2" "2,3" && sleep 0.4
 source obj_attack.sh "2,3" "3,3"  && sleep 0.4

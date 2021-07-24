@@ -65,8 +65,11 @@ moveobjkey() {
 	fi
 
 	if [[ $CURMODE == "inbase" ]]; then
-		# !!!
 		[ -z "${INBASEX+x}" ] && INBASEX=0
+
+		INBASEX=$(( $INBASEX "$2" 1 ))
+		(( $INBASEX > ${PLAYERS[$TURN:classesamount]} - 1 )) && INBASEX=0
+		(( $INBASEX < 0 )) && INBASEX=$(( ${PLAYERS[$TURN:classesamount]} - 1 ))
 	fi
 }
 
@@ -86,10 +89,17 @@ actionkey() {
 			source input_targetmode.sh "cancel" "$CURY,$CURX" ;;
 		"inbase")
 			# !!!
-			if [ "${PLAYERS[$TURN:money]}" -ge "current object cost" ]; then
-				PLAYERS[$TURN:money]=$(( ${PLAYERS[$TURN:money]} - "current object cost" ))
+			SELECTEDCLASS=$( printf "%s\n" "${TEAMCLASSES[$TURN]}" | cut -f $((INBASEX + 1)) )
+			SELECTEDCLASSCOST=$( printf "%s\n" "${CLASSPROPS[$SELECTEDCLASS:cost]}" )
+
+			if [ "${PLAYERS[$TURN:money]}" -ge $SELECTEDCLASSCOST ]; then
+				PLAYERS[$TURN:money]=$(( ${PLAYERS[$TURN:money]} - $SELECTEDCLASSCOST ))
+				source obj_create.sh "$SELECTEDCLASS" "$TURN" "$CURY,$CURX"
 				unset INBASEX
 			fi
+
+			source drawui.sh "turn" "money"
+			CURMODE="cursor"
 			;;
 		*) echo "input(): error: cannot recognize cursor mode \"$CURMODE\"." ;;
 	esac

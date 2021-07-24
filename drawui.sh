@@ -35,7 +35,7 @@ drawinfobar() {
 }
 
 drawmoneybar() {
-	echo -ne "\e[${PLAYERMONEYPANELOFS[$1]}H\e[90m(\e[0m${PLAYERS[$1:money]}\e[90m\$)"
+	echo -ne "\e[${PLAYERMONEYPANELOFS[$1]}H\e[90m(\e[0m${PLAYERS[$1:money]}\e[90m\$)     "
 }
 
 drawunitspanel() {
@@ -69,7 +69,7 @@ drawunitspanel() {
 		nextline $DIVISIONERSTR
 
 		# Set up start position for future units choice action:
-		PLAYERPANELLINESOFS[$i_upl]=$CURPANELLINE
+		PLAYERPANELLINESOFS[$i_upl]="$(( $CURPANELLINE + $UNITSPANELY ))"
 
 		#"${TEAMCLASSES[$PLAYERNUM]}" == *"$OBJNAME"*
 		# Print out units and their characteristics for all players:
@@ -103,11 +103,18 @@ drawunitspanel() {
 }
 
 
-clearinbasecursor() {
-	# !!!
-	#for (( ; ; )); do
-		echo -ne "\e[H"
-	#done
+drawinbasecursor() {
+	echo -ne "\e[${PLAYERPANELLINESOFS[$TURN]};$(( $UNITSPANELX - 2 ))H"
+
+	for (( i_inbase = 0; i_inbase < ${PLAYERS[$TURN:classesamount]}; i_inbase++ )); do
+		if [ "$INBASEX" == "$i_inbase" ]; then
+			echo -ne "\e[${PLAYERS[$TURN]}m>\e[1D\e[1B"
+		else
+			echo -ne " \e[1D\e[1B"
+		fi
+
+		: $(( CURXCOUNTER++ ))
+	done
 }
 
 : 'drawturnbar() {
@@ -188,7 +195,7 @@ if [ "$1" ]; then
 			"defaultui")
 				source drawui.sh ""
 				;;
-			*) echo "drawui(): warning: unrecognized option \"$1\"."
+			*) echo "drawui(): warning: unrecognized argument \"$1\"."
 				;;
 		esac
 
@@ -203,7 +210,7 @@ else
 			"cursor") clearinfobar "1" ;;
 			"move") [ $CURMODE != "target" ] && clearinfobar "2" ;;
 			"target") [ $CURMODE == "cursor" ] && clearinfobar "2" || clearinfobar "1" ;;
-			"inbase") clearinbasecursor ;;
+			"inbase") drawinbasecursor ;; # Also clear.
 		esac
 		case $CURMODE in
 			"cursor") framecaptions "Cursor" "" ;;
@@ -230,8 +237,13 @@ else
 			;;
 		"inbase")
 			# Here must be a moveable pointer in the units panel.
+			if [ -${INBASEX+x} ]; then
+				drawinbasecursor
+			else
+				echo "drawui(): warning: cannot use inbase variable."
+			fi
 			;;
-		*) echo "drawinfobar(): warning: unrecognized option \"$1\"." ;;
+		*) echo "drawui(): warning: unknown mode \"$1\"." ;;
 	esac
 
 fi
