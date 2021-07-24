@@ -7,7 +7,7 @@ case $1 in
 	"startecho"|"echo on")
 		stty echo icanon
 		;;
-	"storeterminal") # Save STDIO descriptor:
+	"storeterminal") # Saves STDIO descriptor.
 		exec 3<&0
 		;;
 	"restoreterminal")

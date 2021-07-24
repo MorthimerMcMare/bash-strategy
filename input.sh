@@ -95,8 +95,9 @@ actionkey() {
 			if [ "${PLAYERS[$TURN:money]}" -ge $SELECTEDCLASSCOST ]; then
 				PLAYERS[$TURN:money]=$(( ${PLAYERS[$TURN:money]} - $SELECTEDCLASSCOST ))
 				source obj_create.sh "$SELECTEDCLASS" "$TURN" "$CURY,$CURX"
-				unset INBASEX
 			fi
+
+			unset INBASEX
 
 			source drawui.sh "turn" "money"
 			CURMODE="cursor"
@@ -127,6 +128,8 @@ capturebasekey() { # And also in-base cancel.
 
 
 endturnkey() {
+	[[ "$CURMODE" != "cursor" && "$CURMODE" != "move" ]] && return
+
 	echo -ne "\e[?25h\e[$(($ROWS - 3));1HDo you want to end the turn? [Y/N]"
 
 	local ENDTURNKEYPR=""
@@ -183,6 +186,8 @@ endturnkey() {
 				GAME_BASH_STRATEGY="exit"
 			fi
 		fi
+
+		CURMODE="cursor"
 
 		PREVTURN=$TURN
 		: $(( TURN++ ))
@@ -246,15 +251,18 @@ ForWIP_showKeycode() {
 
 
 
-echo -ne "\e[?25h"
+echo -ne "\e[?25h" # Shows cursor.
 
-# It more or less helps with the repeatable keypress echo:
+# This command disables echo with "stty", ...
 source term_util.sh "stopecho"
 
-read -n1 -s KEYPR
+#...and this redirection suppresses unbuffered symbols from "read":
+read -n1 -s KEYPR > /dev/null
+
 KEYPR=$(echo "$KEYPR" | cat -vT)
 
-echo -ne "\e[?25l"
+echo -ne "\e[?25l" # Hides cursor.
+
 
 case $KEYPR in
 # Not extended keys:

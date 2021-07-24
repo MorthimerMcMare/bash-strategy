@@ -29,7 +29,6 @@ if [[ "${FIELD[$1]}" == *"Base"* && $2 -lt $MAXPLAYERS ]]; then
 	PLAYERBASES[$2:count]=$NEXTBASEINDEX
 	#PLAYERBASES[$2:count]=$(( ${PLAYERBASES[$2:count]} + 1 ))
 	PLAYERS[$2:curbase]=$NEXTBASEINDEX
-	
 
 	#echo "pl\"$2\" to \"${PLAYERBASES[$2:$NEXTBASEINDEX]}\"/\"${PLAYERBASES[$2:count]}\""
 fi

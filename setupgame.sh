@@ -280,21 +280,21 @@ echo "setupField(): call to drawfield(): updating field cache..."
 source drawfield.sh "updatecache"
 
 
-: '
-source obj_create.sh "Light tank" "1" "2,2"
-source obj_create.sh "Trike" "1" "2,4"
+#source obj_create.sh "Light tank" "1" "2,2"
+#source obj_create.sh "Trike" "1" "2,4"
 #source obj_create.sh "Amphybia" "1" "3,3"
-source obj_create.sh "Light tank" "1" "4,7"
+#source obj_create.sh "Light tank" "1" "4,7"
 
-#source obj_create.sh "Rocket launcher" "2" "5,4"
-#source obj_create.sh "Heavy tank" "2" "3,7"
-source obj_create.sh "BTR" "2" "4,1"
+#source obj_create.sh "Rocket launcher" "2" "3,7"
+#source obj_create.sh "Heavy tank" "2" "5,7"
+#source obj_create.sh "BTR" "2" "4,1"
 
 #source drawfield.sh "(from setupgame.sh)"
 
 # Ten times blows up the second (internally "1"st) column:
 #for (( ix = 0; ix < 10; ix++ )); do for (( jx = 0; jx < 8; jx++ )); do source tile_explode.sh "$jx,1"; done; done
 
+: '
 source obj_move.sh "4,7" "5,7" && sleep 0.4
 source obj_move.sh "2,2" "2,3" && sleep 0.4
 source obj_attack.sh "2,3" "3,3"  && sleep 0.4

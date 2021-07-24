@@ -26,12 +26,17 @@ framecaptions() {
 drawinfobar() {
 	[ "$2" == "2" ] && OFS=$INFOBARLOCKY || OFS=$INFOBARY
 
-	STR1="${OBJECTS[$1]:0:20}\e[0m: hp ${OBJECTSHP[$1]}/$(. obj_getattr.sh $1 maxhp), "
+	# "$INFOBARSTRSPACESLENCONST" also includes an escape seqs, so now there's 
+	#excess text color changes.
+	STR1="${OBJECTS[$1]:0:15}\e[0m: hp ${OBJECTSHP[$1]}/$(. obj_getattr.sh $1 maxhp), "
 	STR1=$STR1"atk $(. obj_getattr.sh $1 attack)($(. obj_getattr.sh $1 backfire))"
-	STR2="Moves: ${OBJECTSMOVE[$1]}/$(. obj_getattr.sh $1 range)"
+	STR1SPACES="$(printf "%*s" $(( $INFOBARSTRSPACESLENCONST - ${#STR1} )) '')"
 
-	echo -ne "\e[$OFS;${INFOBARX}H\e[${OBJECTSCOLOR[$1]}m$STR1 \
-\e[$(( $OFS + 1 ));${INFOBARX}H$STR2 "
+	STR2="Moves: \e[0m${OBJECTSMOVE[$1]}/$(. obj_getattr.sh $1 range)"
+	STR2SPACES="$(printf "%*s" $(( $INFOBARSTRSPACESLENCONST - ${#STR2} )) '')"
+
+	echo -ne "\e[$OFS;${INFOBARX}H\e[${OBJECTSCOLOR[$1]}m$STR1$STR1SPACES\
+\e[$(( $OFS + 1 ));${INFOBARX}H$STR2$STR2SPACES"
 }
 
 drawmoneybar() {
@@ -154,7 +159,7 @@ if [ "$1" ]; then
 					COMPACTSCREEN=0
 					SCREENMINX=15
 
-					INFOBARX=15
+					INFOBARX=14
 					INFOBARCAPTIONXOFS=$(( $INFOBARX - 3 ))
 					INFOBARY=$(( $SCREENMINY + $FIELDMAXY + 2 ))
 					INFOBARLOCKY=$(( INFOBARY + 3 ))
@@ -179,12 +184,13 @@ if [ "$1" ]; then
 					INFOBARLOCKY=$(( INFOBARY + 3 ))
 				fi
 
+				INFOBARSTRSPACESLENCONST=$(( $UNITSPANELX - $INFOBARX + 3 ))
 				;;
 			"turn")
 				echo -ne "\e[1;$(( $SCREENMINX + $FIELDMAXX / 2 - 6 ))H\e[${PLAYERS[$TURN]}mPlayer $TURN\e[0m turn:"
 				;;
 			"money") # Also draws in "drawunitspanel()".
-				for (( i_players = 1; i_players < $MAXPLAYERS; i_players++ )); do				
+				for (( i_players = 1; i_players < $MAXPLAYERS; i_players++ )); do
 					drawmoneybar "$i_players"
 				done
 				;;

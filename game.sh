@@ -25,7 +25,7 @@ while [[ $GAME_BASH_STRATEGY != "exit" ]]; do
 	PREVMODE=$CURMODE
 
 	source term_util.sh "flush"
-	source term_util.sh "echo on"
+	#source term_util.sh "echo on"
 done
 
 # Trap "intercept_exit()" will prevent exit without clear.

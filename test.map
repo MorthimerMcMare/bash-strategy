@@ -4,12 +4,15 @@
 //
 //[aliases]
 //<string:alias> <char:symbol>
+//<...>
 //
 //[players]
 //<int_from1to6:playernum> <int:start_wealth>
+//<...>
 //
 //[map]
 //<string:newmapline_builded_from_aliases>
+//<...>
 
 [tiles]
 tileset1.tls
