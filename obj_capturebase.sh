@@ -13,13 +13,13 @@ fi
 
 
 # Captures base only if:
-#  - Object exists and can move, and
-#  - A tile has a "freebase" attribute, and
+#  - Object exists, belongs to team with current turn and can move, and
+#  - A tile has a "occupablebase" attribute, and
 #  - Tile is not this player's base:
 [ -z "${OBJECTS[$1]}" ] && return 1
 
 CUROBJECTTEAM=$(. obj_getattr.sh "$1" "team")
-if [[ ${TILEATTRS[${FIELD[$1]}]} == *"occupablebase"* && ${FIELD[$1]: -1} != $CUROBJECTTEAM ]]; then
+if [[ $CUROBJECTTEAM -eq $TURN && ${TILEATTRS[${FIELD[$1]}]} == *"occupablebase"* && ${FIELD[$1]: -1} != $CUROBJECTTEAM ]]; then
 	TILEEXPRESSION=1
 else
 	TILEEXPRESSION=0
