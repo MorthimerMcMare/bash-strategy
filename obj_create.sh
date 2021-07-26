@@ -30,4 +30,8 @@ if [[ -z ${OBJECTS[$3]} && (( $TEAMSEXPRESSION == 1 )) && $CELLX -lt $FIELDMAXX 
 	# There's cannot be reality where single object draws before field. 
 	#Theoretically...
 	source drawfield.sh "default" "$3"
+
+	return 0
 fi
+
+return 1

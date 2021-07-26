@@ -93,8 +93,9 @@ actionkey() {
 			SELECTEDCLASSCOST=$( printf "%s\n" "${CLASSPROPS[$SELECTEDCLASS:cost]}" )
 
 			if [ "${PLAYERS[$TURN:money]}" -ge $SELECTEDCLASSCOST ]; then
-				PLAYERS[$TURN:money]=$(( ${PLAYERS[$TURN:money]} - $SELECTEDCLASSCOST ))
 				source obj_create.sh "$SELECTEDCLASS" "$TURN" "$CURY,$CURX"
+
+				[[ "$?" == 0 ]] && PLAYERS[$TURN:money]=$(( ${PLAYERS[$TURN:money]} - $SELECTEDCLASSCOST ))
 			fi
 
 			unset INBASEX
