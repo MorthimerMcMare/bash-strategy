@@ -9,11 +9,11 @@
 # space enter kp5 : Action key: toggle cursor/object (in base: select unit to produce)
 # f 1 kp1 t		: Attack/fire key
 #
-# e tab dot rsqbracket kp9 : Next object
-# q shift-tab comma lsqbracket kp7 : Prev object
+# e dot rsqbracket kp9 : Next object
+# q comma lsqbracket kp7 : Prev object
 # E	greater kp+	: Next base
 # Q	less kp-	: Prev base
-# c	slash bslash 0 kp0/ins: Capture base (in base: cancel)
+# c slash bslash 0 kp0/ins: Capture base (in base: cancel)
 # X doublequotes: End turn
 #
 # F1			: Help
@@ -307,6 +307,8 @@ case $KEYPR in
 		"[E") actionkey ;; # Keypad "5" (when not numlock).
 		"[F") attackkey ;; # Keypad "1"/"End" (when not numlock).
 		"[2~") capturebasekey ;; # Keypad "0"/"Ins" (when not numlock).
+
+		"OP") source showhelp.sh ;; # F1.
 
 		"[15~") # F5 (show health)
 			showaltfieldkey "objectshp" ;;
