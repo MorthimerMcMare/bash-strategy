@@ -212,16 +212,30 @@ quickjumpkey() {
 
 	if [[ "$CURMODE" == "cursor" ]]; then
 
-		if [[ "$1" == "base" && ${PLAYERBASES[$TURN:count]} -gt 0 ]]; then
-			# Cycle current base index:
-			PLAYERS[$TURN:curbase]=$(( ${PLAYERS[$TURN:curbase]} "$2" 1 ))
-			(( ${PLAYERS[$TURN:curbase]} > ${PLAYERBASES[$TURN:count]} )) && PLAYERS[$TURN:curbase]=1
-			(( ${PLAYERS[$TURN:curbase]} < 1 )) && PLAYERS[$TURN:curbase]=${PLAYERBASES[$TURN:count]}
-			#echo "cur ${PLAYERS[$TURN:curbase]}: \"${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}\""
+		if [[ "$1" == "base" ]]; then
+			if [ ${PLAYERBASES[$TURN:count]} -gt 0 ]; then
+				# Cycle current base index:
+				#PLAYERS[$TURN:curbase]=$(( ${PLAYERS[$TURN:curbase]} "$2" 1 ))
 
-			NEWPOS="${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}"
-			CURY=${NEWPOS%,*}
-			CURX=${NEWPOS#*,}
+				#echo "before curbase: ${PLAYERS[$TURN:curbase]}" && sleep 0.1
+
+				while true; do
+					: $(( PLAYERS[$TURN:curbase]"$2$2" )) # "++" or "--" :) .
+					#echo "$2: ${PLAYERS[$TURN:curbase]}" && sleep 0.1
+					(( ${PLAYERS[$TURN:curbase]} > ${PLAYERBASES[$TURN:count]} - 1 )) && PLAYERS[$TURN:curbase]=0
+					(( ${PLAYERS[$TURN:curbase]} < 0 )) && PLAYERS[$TURN:curbase]=$(( ${PLAYERBASES[$TURN:count]} - 1 ))
+					#PLAYERS[$TURN:curbase]=$(( ${PLAYERS[$TURN:curbase]} "$2" 1 ))
+					#echo "curbase${PLAYERS[$TURN:curbase]}:\"${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}\"" && sleep 0.1
+
+					[ "${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}" ] && break
+				done
+
+				#echo "cur ${PLAYERS[$TURN:curbase]}: \"${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}\""
+
+				NEWPOS="${PLAYERBASES[$TURN:${PLAYERS[$TURN:curbase]}]}"
+				CURY=${NEWPOS%,*}
+				CURX=${NEWPOS#*,}
+			fi
 		elif [ "$1" == "object" ]; then
 			command
 		else

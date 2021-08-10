@@ -159,7 +159,8 @@ setupField() {
 
 				PLAYERS[$CURPLAYER]="$CURPLAYERCOLOR"
 				PLAYERS[$CURPLAYER:money]=${LINE#* }
-				PLAYERS[${FILEDALIAS: -1}:curbase]=0
+				PLAYERS[$CURPLAYER:curbase]=0
+				PLAYERBASES[$CURPLAYER:count]=0
 
 				TILES[PlayerBase$CURPLAYER]="\\e[${CURPLAYERCOLOR}m${TILES[PlayerBase]}\\e[0m"
 				TILEATTRS[PlayerBase$CURPLAYER]="${TILEATTRS[PlayerBase]}"
@@ -187,10 +188,9 @@ setupField() {
 					if [[ "$FIELDALIAS" == "PlayerBase"* ]]; then
 						CURPLAYER="${FIELDALIAS: -1}"
 						source base_updatequickaccess.sh "$FIELDMAXY,$x" "$CURPLAYER"
-						#PLAYERBASES[$CURPLAYER:${PLAYERS[$CURPLAYER,curbase]}]="$FIELDMAXY,$x"
+						#PLAYERBASES[$CURPLAYER:${PLAYERS[$CURPLAYER:curbase]}]="$FIELDMAXY,$x"
 
-						#echo ${PLAYERBASES[$CURPLAYER,${PLAYERS[$CURPLAYER,curbase]}]}
-						PLAYERS[$CURPLAYER:curbase]=$(( ${PLAYERS[$CURPLAYER:curbase]} + 1 ))
+						#echo ${PLAYERBASES[$CURPLAYER:${PLAYERS[$CURPLAYER:curbase]}]}
 					fi
 				done
 

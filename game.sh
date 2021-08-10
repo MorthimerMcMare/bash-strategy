@@ -28,4 +28,4 @@ while [[ $GAME_BASH_STRATEGY != "exit" ]]; do
 	#source term_util.sh "echo on"
 done
 
-# Trap "intercept_exit()" will prevent exit without clear.
+# Trap "intercept_exit()" will prevent exit without clearing.
