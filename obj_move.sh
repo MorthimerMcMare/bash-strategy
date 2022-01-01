@@ -26,7 +26,7 @@ if [[ -z ${OBJECTS[$2]} && "$INBOUNDSEXPR" && (( ${OBJECTSMOVE[$1]} > 0 )) ]]; t
 		for i in $(echo "$TILEATTR"); do
 			[ $i == "impassible" ] && PASSIBILITY=0
 
-			# Check for "[im]passible" attribute prefix isn't needed, because
+			# Check for "[im]passible" attribute prefix isn't necessary, because
 			#"$i" has no excess symbols at the beginnig of the string.
 			if [[ $i == "passible:"* && ( "$OBJATTR" == *"passattr:${i#*:}"* ) ]]; then
 				PASSIBILITY=1

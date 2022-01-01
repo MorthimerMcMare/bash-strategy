@@ -5,7 +5,7 @@
 
 if [[ -z "$1" || "$3" ]]; then
 	echo "input_targetmode(): wrong number of arguments."
-	echo "Usage: <string:whattodo> [<int:targx>,<int:targy> (if needed)]."
+	echo "Usage: <string:whattodo> [<int:targx>,<int:targy> (if necessary)]."
 	echo "<string:whattodo> may be \"prepare\", \"draw\", \"tryattack\" or \"cancel\"."
 	source shutdown.sh error
 elif [[ -z ${GAME_BASH_STRATEGY+x} ]]; then
@@ -30,7 +30,7 @@ cleartargetmode() {
 		CURMODE="cursor"
 
 		# This one line seems like clutch. It is clutch!
-		#(If serious, it needed to force update cached string with old wrong 
+		#(If serious, it necessary to force update cached string with old wrong 
 		#target's HP. Maybe it's better to create separated force-mode variable,
 		#or write a simple cache manager for each future memory case?):
 		#INFOBARCACHEPREVPOS=""

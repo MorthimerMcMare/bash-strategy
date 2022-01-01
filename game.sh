@@ -8,7 +8,7 @@ intercept_exit() {
 }
 trap intercept_exit EXIT
 
-# On initializaton program works with configuration files, so it's needed to 
+# On initializaton program works with configuration files, so it's necessary to 
 #store original STDIN, or else an EXIT signal will produce a fatal error in the 
 #"shutdown.sh" because of "stty" failure:
 source term_util.sh "storeterminal"

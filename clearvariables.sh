@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Unset all "global" variables (don't sure is it needed, so let it be?).
+# Unset all "global" variables (don't sure is it necessary, so let it be?).
 
 unset PLAYERTEAMS
 unset PLAYERBASES
